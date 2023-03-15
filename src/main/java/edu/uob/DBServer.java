@@ -11,7 +11,7 @@ import java.nio.file.Files;
 public class DBServer {
 
     private static final char END_OF_TRANSMISSION = 4;
-    private String storageFolderPath;
+    private static String storageFolderPath;
 
     private FileParser fileParser;
 
@@ -36,7 +36,7 @@ public class DBServer {
         }
         fileList(storageFolderPath);
         //database.printTableNames();
-        outputTable("sheds");
+        //outputTable("sheds");
     }
 
     public void fileList(String path){
@@ -49,24 +49,8 @@ public class DBServer {
         }
     }
 
-    //need to write an exception for this method in case table doesn't exist
-    public void outputTable(String tableName){
-        String fileName = (storageFolderPath + File.separator + tableName + ".tab");
-        File fileToOpen = new File(fileName);
-        try {
-            if(fileToOpen.createNewFile()) {
-                FileWriter writer = new FileWriter(fileName);
-                BufferedWriter buffWriter = new BufferedWriter(writer);
-                Table table = database.getTable(tableName);
-                for (Row row : table.getRows().values()) {
-                    String rowString = String.join("\t", row.getValues());
-                    buffWriter.write(rowString);
-                }
-                buffWriter.close();
-            }
-        } catch(IOException ioe) {
-            System.out.println("Can't write to file");
-        }
+    public static String getStorageFolderPath() {
+        return storageFolderPath;
     }
 
     /**

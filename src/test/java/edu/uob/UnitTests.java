@@ -37,6 +37,7 @@ public class UnitTests {
         row1.addValueList(row1Values);
         row2.addValueList(row2Values);
         database.addTable("test_table", table);
+        table.outputTable("test_table");
         Query query = new Query(table);
         assertEquals(table.getNumCols(), 2);
         assertEquals(table.getNumRows(), 3);
