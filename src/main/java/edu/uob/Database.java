@@ -31,9 +31,9 @@ public class Database {
         }
     }
 
-//    public void outputTables(){
-//        for(Table table: tables.values()){
-//            table.outputTable();
-//        }
-//    }
+    public void outputTables(String storageFolderPath){
+        for(String tableName: tables.keySet()){
+            getTable(tableName).outputTable(storageFolderPath, tableName);
+        }
+    }
 }

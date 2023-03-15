@@ -2,6 +2,8 @@ package edu.uob;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
@@ -13,11 +15,14 @@ public class UnitTests {
     private Database database;
     private Table table;
 
+    private String storageFolderPath;
+
     // Create a new server _before_ every @Test
     @BeforeEach
     public void setup() {
         this.database = new Database();
         this.table = new Table();
+        storageFolderPath = Paths.get("databases").toAbsolutePath().toString();
     }
     @Test
     public void makeBasicTable() {
@@ -37,7 +42,7 @@ public class UnitTests {
         row1.addValueList(row1Values);
         row2.addValueList(row2Values);
         database.addTable("test_table", table);
-        table.outputTable("test_table");
+        table.outputTable(storageFolderPath,"test_table");
         Query query = new Query(table);
         assertEquals(table.getNumCols(), 2);
         assertEquals(table.getNumRows(), 3);

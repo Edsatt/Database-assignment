@@ -35,8 +35,7 @@ public class DBServer {
             System.out.println("Can't seem to create database storage folder " + storageFolderPath);
         }
         fileList(storageFolderPath);
-        //database.printTableNames();
-        //outputTable("sheds");
+        database.outputTables(storageFolderPath);
     }
 
     public void fileList(String path){

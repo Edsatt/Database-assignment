@@ -13,12 +13,9 @@ public class Table {
     private LinkedHashMap<String, Row> rows;
     private LinkedHashMap<String, Key> keys;
 
-    private String storageFolderPath;
-
     public Table(){
         this.rows = new LinkedHashMap<>();
         this.keys = new LinkedHashMap<>();
-        this.storageFolderPath = DBServer.getStorageFolderPath();
     }
 
     public HashMap<String, Row> getRows() {
@@ -85,7 +82,7 @@ public class Table {
     }
 
     //need to write an exception for this method in case table doesn't exist
-    public void outputTable(String tableName){
+    public void outputTable(String storageFolderPath, String tableName){
         String fileName = (storageFolderPath + File.separator + tableName + ".tab");
         File fileToOpen = new File(fileName);
         try {
@@ -95,13 +92,22 @@ public class Table {
                 for (Row row : rows.values()) {
                     String rowString = String.join("\t", row.getValues());
                     buffWriter.write(rowString);
+                    buffWriter.newLine();
                 }
                 buffWriter.close();
             }
         } catch(IOException ioe) {
             System.out.println("Can't write to file");
+            ioe.printStackTrace();
         }
     }
+
+//    public void outputTable(String tableName){
+//        for (Row row : rows.values()) {
+//            String rowString = String.join("\t", row.getValues());
+//            System.out.println(rowString);
+//        }
+//    }
 
 //    public void printTableKeys(){
 //        for(String name: rows.keySet()){
