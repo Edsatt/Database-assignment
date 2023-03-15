@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class FileParser {
     private Table table;
@@ -11,7 +12,6 @@ public class FileParser {
     private ArrayList<Row> rows;
 
     public FileParser(){
-        this.table = new Table(null);
         this.rows = new ArrayList<>();
     }
 
@@ -34,18 +34,16 @@ public class FileParser {
     }
 
     public void lineToRow(@NotNull String fileLine){
-        Row row = new Row("temp", null);
         String [] line = fileLine.split("\t");
-        for (String value: line) {
-            row.addValue(row.getNumValues(), value);
-        }
+        ArrayList<String> rowList = new ArrayList<>(Arrays.asList(line));
+        Row row = new Row("temp", rowList);
         rows.add(rows.size(), row);
     }
 
     public void createTable(){
         for(int i=0; i<rows.size(); i++){
             if(i==0){
-                table.addRow("columnNames", rows.get(i));
+                this.table = new Table(rows.get(i).getValues());
             }
             if(i>0){
                 table.addRow(("row" +i), rows.get(i));
