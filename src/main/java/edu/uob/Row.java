@@ -9,8 +9,9 @@ public class Row {
     private ArrayList<String> values;
     private String rowName;
 
-    public Row(String rowName){
+    public Row(String rowName, List<String> values){
         this.values = new ArrayList<>();
+        this.values.addAll(values);
         this.rowName = rowName;
     }
 

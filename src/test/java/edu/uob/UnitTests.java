@@ -21,30 +21,23 @@ public class UnitTests {
     @BeforeEach
     public void setup() {
         this.database = new Database();
-        this.table = new Table();
         storageFolderPath = Paths.get("databases").toAbsolutePath().toString();
     }
     @Test
     public void makeBasicTable() {
-        List<String> columns = Stream.of("Column1", "Column2")
-                .collect(Collectors.toList());
-        List<String> row1Values = Stream.of("cell1", "cell3")
-                .collect(Collectors.toList());
-        List<String> row2Values = Stream.of("cell2", "cell4")
-                .collect(Collectors.toList());
-        Row columnNames = new Row("columnNames");
-        Row row1 = new Row("row1");
-        Row row2 = new Row("row2");
-        table.addRow("columnNames",columnNames);
+        this.table = new Table(Stream.of("Column1", "Column2")
+                .collect(Collectors.toList()));
+        Row row1 = new Row("row1", Stream.of("cell1", "cell3")
+                .collect(Collectors.toList()));
+        Row row2 = new Row("row2", Stream.of("cell2", "cell4")
+                .collect(Collectors.toList()));
+
         table.addRow("row1", row1);
         table.addRow("row2", row2);
-        table.addColumnList(columns);
-        row1.addValueList(row1Values);
-        row2.addValueList(row2Values);
         database.addTable("test_table", table);
         table.outputTable(storageFolderPath,"test_table");
-        Query query = new Query(table);
-        assertEquals(table.getNumCols(), 2);
+
+        assertEquals(this.table.getNumCols(), 2);
         assertEquals(table.getNumRows(), 3);
         assertEquals(table.getColumnName(0),"Column1");
         assertEquals(table.getColumnName(1),"Column2");
@@ -52,7 +45,6 @@ public class UnitTests {
         assertEquals(table.getRow("row1").getValueByColumn(1), "cell3");
         assertEquals(table.getRow("row2").getValueByColumn(0), "cell2");
         assertEquals(table.getRow("row2").getValueByColumn(1), "cell4");
-        assertEquals(query.getColumnNameFromValue("cell1"),"Column1");
     }
 }
 

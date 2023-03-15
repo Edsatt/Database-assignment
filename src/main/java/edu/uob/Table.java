@@ -13,9 +13,11 @@ public class Table {
     private LinkedHashMap<String, Row> rows;
     private LinkedHashMap<String, Key> keys;
 
-    public Table(){
+    public Table(List<String> values){
         this.rows = new LinkedHashMap<>();
         this.keys = new LinkedHashMap<>();
+        Row columnNames = new Row("columnNames", values);
+        addRow("columnNames", columnNames);
     }
 
     public HashMap<String, Row> getRows() {
@@ -109,9 +111,9 @@ public class Table {
 //        }
 //    }
 
-//    public void printTableKeys(){
-//        for(String name: rows.keySet()){
-//            System.out.println(name);
-//        }
-//    }
+    public void printTableKeys(){
+        for(String name: rows.keySet()){
+            System.out.println(name);
+        }
+    }
 }

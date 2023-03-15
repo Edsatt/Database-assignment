@@ -11,7 +11,7 @@ public class FileParser {
     private ArrayList<Row> rows;
 
     public FileParser(){
-        this.table = new Table();
+        this.table = new Table(null);
         this.rows = new ArrayList<>();
     }
 
@@ -34,7 +34,7 @@ public class FileParser {
     }
 
     public void lineToRow(@NotNull String fileLine){
-        Row row = new Row("temp");
+        Row row = new Row("temp", null);
         String [] line = fileLine.split("\t");
         for (String value: line) {
             row.addValue(row.getNumValues(), value);
