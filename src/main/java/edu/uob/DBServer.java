@@ -12,9 +12,8 @@ public class DBServer {
 
     private static final char END_OF_TRANSMISSION = 4;
     private static String storageFolderPath;
-
+    private String newLine = System.lineSeparator();
     private FileParser fileParser;
-
     static Database database;
 
     public static void main(String args[]) throws IOException {
@@ -59,15 +58,15 @@ public class DBServer {
     * <p>This method handles all incoming DB commands and carries out the required actions.
     */
     public String handleCommand(String command) {
-        String output = "";
+        StringBuilder output = new StringBuilder();
         for(Table table: database.getTables().values()){
-            output = output.concat("Table name: " +table.getTableName() +System.lineSeparator());
+            output.append("Table name: ").append(table.getTableName()).append(newLine);
             for(Row row: table.getRows().values()){
-                output = output.concat(row.outputRow()) +System.lineSeparator();
+                output.append(row.outputRow()).append(newLine);
             }
-            output = output.concat(System.lineSeparator());
+            output.append(newLine);
         }
-        return output;
+        return output.toString();
     }
 
     //  === Methods below handle networking aspects of the project - you will not need to change these ! ===
