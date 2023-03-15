@@ -8,6 +8,10 @@ public class Database {
         tables = new LinkedHashMap<>();
     }
 
+    public LinkedHashMap<String, Table> getTables(){
+        return tables;
+    }
+
     public Table getTable(String tableName){
         return tables.get(tableName);
     }
@@ -34,6 +38,12 @@ public class Database {
     public void outputTables(String storageFolderPath){
         for(String tableName: tables.keySet()){
             getTable(tableName).outputTable(storageFolderPath, tableName);
+        }
+    }
+
+    public void printTables(){
+        for(String tableName: tables.keySet()){
+            getTable(tableName).printTable(tableName);
         }
     }
 }

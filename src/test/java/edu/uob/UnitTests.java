@@ -25,7 +25,7 @@ public class UnitTests {
     }
     @Test
     public void makeBasicTable() {
-        this.table = new Table(Stream.of("Column1", "Column2")
+        this.table = new Table("testTable", Stream.of("Column1", "Column2")
                 .collect(Collectors.toList()));
         Row row1 = new Row("row1", Stream.of("cell1", "cell3")
                 .collect(Collectors.toList()));
@@ -34,8 +34,8 @@ public class UnitTests {
 
         table.addRow("row1", row1);
         table.addRow("row2", row2);
-        database.addTable("test_table", table);
-        table.outputTable(storageFolderPath,"test_table");
+        database.addTable("testTable", table);
+        table.outputTable(storageFolderPath,"testTable");
 
         assertEquals(this.table.getNumCols(), 2);
         assertEquals(table.getNumRows(), 3);

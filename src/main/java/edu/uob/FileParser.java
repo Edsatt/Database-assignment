@@ -28,8 +28,8 @@ public class FileParser {
         } catch(IOException ioe){
             System.out.println("Cannot open file");
         }
-        createTable();
         setTableName(fileToOpen);
+        createTable();
         saveTable();
     }
 
@@ -40,19 +40,19 @@ public class FileParser {
         rows.add(rows.size(), row);
     }
 
+    public void setTableName(File file){
+        tableName = file.getName().replace(".tab","");
+    }
+
     public void createTable(){
         for(int i=0; i<rows.size(); i++){
             if(i==0){
-                this.table = new Table(rows.get(i).getValues());
+                this.table = new Table(tableName, rows.get(i).getValues());
             }
             if(i>0){
                 table.addRow(("row" +i), rows.get(i));
             }
         }
-    }
-
-    public void setTableName(File file){
-        tableName = file.getName().replace(".tab","");
     }
 
     public void saveTable(){

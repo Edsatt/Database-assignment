@@ -59,8 +59,15 @@ public class DBServer {
     * <p>This method handles all incoming DB commands and carries out the required actions.
     */
     public String handleCommand(String command) {
-        // TODO implement your server logic here
-        return "";
+        String output = "";
+        for(Table table: database.getTables().values()){
+            output = output.concat("Table name: " +table.getTableName() +System.lineSeparator());
+            for(Row row: table.getRows().values()){
+                output = output.concat(row.outputRow()) +System.lineSeparator();
+            }
+            output = output.concat(System.lineSeparator());
+        }
+        return output;
     }
 
     //  === Methods below handle networking aspects of the project - you will not need to change these ! ===

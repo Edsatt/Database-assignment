@@ -68,4 +68,8 @@ public class Row {
     public void removeValue(String value){
         values.remove(value);
     }
+
+    public String outputRow(){
+        return String.join("\t", getValues());
+    }
 }

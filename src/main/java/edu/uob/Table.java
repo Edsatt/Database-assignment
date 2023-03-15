@@ -13,9 +13,12 @@ public class Table {
     private LinkedHashMap<String, Row> rows;
     private LinkedHashMap<String, Key> keys;
 
-    public Table(List<String> values){
+    private String tableName;
+
+    public Table(String tableName, List<String> values){
         this.rows = new LinkedHashMap<>();
         this.keys = new LinkedHashMap<>();
+        this.tableName = tableName;
         Row columnNames = new Row("columnNames", values);
         addRow("columnNames", columnNames);
     }
@@ -40,6 +43,10 @@ public class Table {
         return keys.get(colName);
     }
 
+    public String getTableName() {
+        return tableName;
+    }
+
     public void addRow(String rowName, Row row){
         rows.put(rowName, row);
     }
@@ -50,8 +57,12 @@ public class Table {
     }
 
     //replace a column
-    public void setColumns(int columnIndex, String columnName){
+    public void setColumn(int columnIndex, String columnName){
         getRow("columnNames").setValue(columnIndex, columnName);
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
     }
 
     //add multiple columns
@@ -104,12 +115,12 @@ public class Table {
         }
     }
 
-//    public void outputTable(String tableName){
-//        for (Row row : rows.values()) {
-//            String rowString = String.join("\t", row.getValues());
-//            System.out.println(rowString);
-//        }
-//    }
+    public void printTable(String tableName){
+        for (Row row : rows.values()) {
+            String rowString = String.join("\t", row.getValues());
+            System.out.println(rowString);
+        }
+    }
 
     public void printTableKeys(){
         for(String name: rows.keySet()){
