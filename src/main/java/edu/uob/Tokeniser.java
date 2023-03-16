@@ -3,7 +3,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Tokeniser {
-    String query = "  INSERT  INTO  people   VALUES(  'Simon Lock'  ,35, 'simon@bristol.ac.uk' , 1.8  ) ; ";
+    String query = "INSERT INTO marks VALUES ('Steve', A, TRUE);";
     String[] specialCharacters = {"(",")",",",";"};
     ArrayList<String> tokens = new ArrayList<String>();
 

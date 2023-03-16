@@ -14,6 +14,7 @@ public class Table {
     private LinkedHashMap<String, Key> keys;
 
     private String tableName;
+    //add method to check table has id column, and if not add it in
 
     public Table(String tableName, List<String> values){
         this.rows = new LinkedHashMap<>();

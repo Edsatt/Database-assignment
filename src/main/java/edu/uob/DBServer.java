@@ -25,6 +25,8 @@ public class DBServer {
     * KEEP this signature otherwise we won't be able to mark your submission correctly.
     */
     public DBServer() {
+//        Tokeniser tokeniser = new Tokeniser();
+//        tokeniser.setup();
         database = new Database();
         storageFolderPath = Paths.get("databases").toAbsolutePath().toString();
         try {
