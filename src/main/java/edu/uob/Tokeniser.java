@@ -4,13 +4,12 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class Tokeniser {
-    String query;
-    String[] specialCharacters = {"(",")",",",";","=",">","<","!","+","-"};
-    ArrayList<String> tokenStrings = new ArrayList<>();
-    ArrayList<Token> tokens = new ArrayList<>();
+    private String[] specialCharacters = {"(",")",",",";","=",">","<","!","+","-"};
+    private ArrayList<String> tokenStrings = new ArrayList<>();
+    private ArrayList<Token> tokens = new ArrayList<>();
 
     public void setup(String query){
-        this.query = query.trim();
+        query = query.trim();
         String[] fragments = query.split("'");
         for (int i=0; i<fragments.length; i++) {
             if (i%2 != 0) tokenStrings.add("'" + fragments[i] + "'");
@@ -21,7 +20,7 @@ public class Tokeniser {
         }
         tokenCheck();
         for (String token : tokenStrings) storeToken(token);
-        for (Token token : tokens) printToken(token);
+        //for (Token token : tokens) printToken(token);
     }
 
     public String[] tokenise(String input){
@@ -78,5 +77,17 @@ public class Tokeniser {
 
     public void printToken(Token token){
         System.out.println("Value = " +token.getValue() +" Type = " +token.getType());
+    }
+
+    public ArrayList<Token> getTokens() {
+        return tokens;
+    }
+
+    public Token getToken(int index){
+        return tokens.get(index);
+    }
+
+    public int getNumTokens(){
+        return tokens.size();
     }
 }
