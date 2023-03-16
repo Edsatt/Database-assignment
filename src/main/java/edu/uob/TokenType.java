@@ -2,8 +2,8 @@ package edu.uob;
 
 public enum TokenType {
     COMMAND,
-    ALTERATION,
     BOOLEAN,
+    COMPARATOR,
     NAME,
     STRING_LITERAL,
     LETTER,
@@ -11,5 +11,6 @@ public enum TokenType {
     FLOAT,
     SYMBOL,
     SPACE,
-    WILD_CARD,
+    WILD,
+    INVALID;
 }

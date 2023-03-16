@@ -25,8 +25,6 @@ public class DBServer {
     * KEEP this signature otherwise we won't be able to mark your submission correctly.
     */
     public DBServer() {
-//        Tokeniser tokeniser = new Tokeniser();
-//        tokeniser.setup();
         database = new Database();
         storageFolderPath = Paths.get("databases").toAbsolutePath().toString();
         try {
@@ -60,15 +58,18 @@ public class DBServer {
     * <p>This method handles all incoming DB commands and carries out the required actions.
     */
     public String handleCommand(String command) {
-        StringBuilder output = new StringBuilder();
-        for(Table table: database.getTables().values()){
-            output.append("Table name: ").append(table.getTableName()).append(newLine);
-            for(Row row: table.getRows().values()){
-                output.append(row.outputRow()).append(newLine);
-            }
-            output.append(newLine);
-        }
-        return output.toString();
+//        StringBuilder output = new StringBuilder();
+//        for(Table table: database.getTables().values()){
+//            output.append("Table name: ").append(table.getTableName()).append(newLine);
+//            for(Row row: table.getRows().values()){
+//                output.append(row.outputRow()).append(newLine);
+//            }
+//            output.append(newLine);
+//        }
+//        return output.toString();
+        Tokeniser tokeniser = new Tokeniser();
+        tokeniser.setup(command);
+        return "tokenised";
     }
 
     //  === Methods below handle networking aspects of the project - you will not need to change these ! ===
