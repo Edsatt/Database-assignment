@@ -14,7 +14,7 @@ public class DBServer {
     private static String storageFolderPath;
     private String newLine = System.lineSeparator();
     private FileParser fileParser;
-    static Database database;
+    static DatabaseList databases;
 
     public static void main(String args[]) throws IOException {
         DBServer server = new DBServer();
@@ -25,7 +25,7 @@ public class DBServer {
     * KEEP this signature otherwise we won't be able to mark your submission correctly.
     */
     public DBServer() {
-        database = new Database();
+        databases = new DatabaseList();
         storageFolderPath = Paths.get("databases").toAbsolutePath().toString();
         try {
             // Create the database storage folder if it doesn't already exist !
@@ -34,7 +34,6 @@ public class DBServer {
             System.out.println("Can't seem to create database storage folder " + storageFolderPath);
         }
         fileList(storageFolderPath);
-        database.outputTables(storageFolderPath);
     }
 
     public void fileList(String path){

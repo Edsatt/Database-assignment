@@ -7,12 +7,13 @@ public class Parser {
 
     private ArrayList<Token> tokens;
     private int programCount;
-
+    private DatabaseList databases;
     private boolean parseSuccess;
 
     public Parser(ArrayList<Token> tokens){
         this.tokens = tokens;
         this.programCount = 0;
+        this.databases = DBServer.databases;
         this.parseSuccess = true;
         parseCommand();
         System.out.println("Parse success = " +parseSuccess);
@@ -26,7 +27,8 @@ public class Parser {
         if(tokens.get(programCount).getType()!=TokenType.COMMAND){
             parseSuccess = false;
             return;
-        }else incrementProgramCount();
+        }else commandType();
+        incrementProgramCount();
         if(!Objects.equals(tokens.get(programCount).getValue(), ";")){
             parseSuccess = false;
         }
@@ -46,7 +48,18 @@ public class Parser {
         }
     }
 
-    public void parseUse(){}
+    public void parseUse(){
+        incrementProgramCount();
+        Token token = tokens.get(programCount);
+        if(token.getType()!=TokenType.NAME){
+            parseSuccess = false;
+            return;
+        }
+        String tokenValue = token.getValue();
+        for(String databaseName: databases.getDatabases().keySet())
+            if (Objects.equals(tokenValue, databaseName)) return;
+        System.out.println("Database with name " +tokenValue +" not found");
+    }
 
     public void parseCreate(){}
 
