@@ -68,6 +68,7 @@ public class DBServer {
             }
             output.append(newLine);
         }
+        database.outputTables(storageFolderPath);
         return output.toString();
     }
 

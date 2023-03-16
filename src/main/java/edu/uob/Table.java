@@ -113,18 +113,14 @@ public class Table {
     //need to write an exception for this method in case table doesn't exist
     public void outputTable(String storageFolderPath, String tableName){
         String fileName = (storageFolderPath + File.separator + tableName + ".tab");
-        File fileToOpen = new File(fileName);
         try {
-            if(fileToOpen.createNewFile()) {
-                FileWriter writer = new FileWriter(fileName);
-                BufferedWriter buffWriter = new BufferedWriter(writer);
-                for (Row row : rows.values()) {
-                    String rowString = String.join("\t", row.getValues());
-                    buffWriter.write(rowString);
-                    buffWriter.newLine();
-                }
-                buffWriter.close();
+            BufferedWriter buffWriter = new BufferedWriter(new FileWriter(fileName));
+            for (Row row : rows.values()) {
+                String rowString = String.join("\t", row.getValues());
+                buffWriter.write(rowString);
+                buffWriter.newLine();
             }
+            buffWriter.close();
         } catch(IOException ioe) {
             System.out.println("Can't write to file");
             ioe.printStackTrace();
