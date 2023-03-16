@@ -37,14 +37,14 @@ public class UnitTests {
         database.addTable("testTable", table);
         table.outputTable(storageFolderPath,"testTable");
 
-        assertEquals(this.table.getNumCols(), 2);
+        assertEquals(this.table.getNumCols(), 3);
         assertEquals(table.getNumRows(), 3);
-        assertEquals(table.getColumnName(0),"Column1");
-        assertEquals(table.getColumnName(1),"Column2");
-        assertEquals(table.getRow("row1").getValueByColumn(0), "cell1");
-        assertEquals(table.getRow("row1").getValueByColumn(1), "cell3");
-        assertEquals(table.getRow("row2").getValueByColumn(0), "cell2");
-        assertEquals(table.getRow("row2").getValueByColumn(1), "cell4");
+        assertEquals(table.getColumnName(0),"id");
+        assertEquals(table.getColumnName(1),"Column1");
+        assertEquals(table.getRow("row1").getValueByColumn(0), "1");
+        assertEquals(table.getRow("row1").getValueByColumn(1), "cell1");
+        assertEquals(table.getRow("row2").getValueByColumn(0), "2");
+        assertEquals(table.getRow("row2").getValueByColumn(1), "cell2");
     }
 }
 
