@@ -36,12 +36,26 @@ public class Token {
     }
 
     public TokenType setTypeNonSpecific(String token){
-        if(token.contains("0123456789") && token.contains(".")) return TokenType.FLOAT;
-        if(token.contains("0123456789")) return TokenType.INTEGER;
-        if(token.length()>1) return TokenType.NAME;
-        if(token.toLowerCase().contains("abcdefghijklmnopqrstuvwxyz")) return TokenType.LETTER;
         if(token.startsWith("'") && token.endsWith("'")) return TokenType.STRING_LITERAL;
-        else return TokenType.INVALID;
+        char[] tokenArray = token.toCharArray();
+        for(char c: tokenArray){
+            if(Character.isDigit(c)){
+                if(token.contains(".")) return TokenType.FLOAT;
+                else return TokenType.INTEGER;
+            }
+            if(Character.isAlphabetic(c)){
+                if(token.length()>1) return TokenType.NAME;
+                else return TokenType.LETTER;
+            }
+        }
+        return TokenType.INVALID;
     }
 
+    public String getValue() {
+        return value;
+    }
+
+    public TokenType getType() {
+        return type;
+    }
 }
