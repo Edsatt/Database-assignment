@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class FileParser {
     private Table table;
@@ -56,6 +57,9 @@ public class FileParser {
     }
 
     public void saveTable(){
+        if(Objects.equals(table.getColumnName(1), "id")){
+            table.removeColumn("id");
+        }
         DBServer.database.addTable(tableName, table);
     }
 

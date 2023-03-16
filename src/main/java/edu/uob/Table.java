@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 
 //Table class contains a hashmap for its rows and keys
 public class Table {
@@ -21,7 +22,18 @@ public class Table {
         this.keys = new LinkedHashMap<>();
         this.tableName = tableName;
         Row columnNames = new Row("columnNames", values);
+        columnNames.addValue(0,"id");
         addRow("columnNames", columnNames);
+    }
+
+    public void addId(Table table){
+        int i=0;
+        for(Row row: table.getRows().values()){
+            if(!Objects.equals(row.getRowName(), "columnNames")){
+                row.addValue(0,""+i);
+            }
+            i++;
+        }
     }
 
     public HashMap<String, Row> getRows() {
@@ -80,7 +92,10 @@ public class Table {
     }
 
     public void removeColumn(String columnName){
-        getRow("columnNames").removeValue(columnName);
+        int index = getRow("columnNames").getColumnIndex(columnName); //gets index for specified column name
+        for (Row row: rows.values()){
+            row.removeValue(row.getValueByColumn(index));
+        }
     }
 
     public void removeKey(String colName){
