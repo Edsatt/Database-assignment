@@ -21,6 +21,7 @@ public class Tokeniser {
         tokenCheck();
         for (String token : tokenStrings) storeToken(token);
         //for (Token token : tokens) printToken(token);
+        parse();
     }
 
     public String[] tokenise(String input){
@@ -89,5 +90,9 @@ public class Tokeniser {
 
     public int getNumTokens(){
         return tokens.size();
+    }
+
+    public void parse(){
+        Parser parser = new Parser(tokens);
     }
 }
