@@ -44,7 +44,7 @@ public class Token {
                 else return TokenType.INTEGER;
             }
             if(Character.isAlphabetic(c)){
-                if(token.length()>1) return TokenType.NAME;
+                if(token.length()>1) return TokenType.PLAIN_TEXT;
                 else return TokenType.LETTER;
             }
         }

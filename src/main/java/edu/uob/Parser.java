@@ -17,6 +17,10 @@ public class Parser {
         System.out.println("Parse success = " +parseSuccess);
     }
 
+    public Token getCurrentToken(){
+        return tokens.get(programCount);
+    }
+
     public Token getNextToken(){
         incrementProgramCount();
         return tokens.get(programCount);
@@ -35,19 +39,22 @@ public class Parser {
         if(programCount>0) programCount --;
     }
 
+    public boolean tokenValue(Token token, String query){
+        return Objects.equals(token.getValue().toUpperCase(), query);
+    }
+
     public void parseCommand(){
-        if(tokens.get(programCount).getType()!=TokenType.COMMAND){
+        if(getCurrentToken().getType()!=TokenType.COMMAND){
             parseSuccess = false;
             return;
         }else commandType();
         incrementProgramCount();
-        if(!Objects.equals(tokens.get(programCount).getValue(), ";")){
-            parseSuccess = false;
-        }
+        if(!tokenValue(getCurrentToken(), ";")) parseSuccess = false;
+
     }
 
     public void commandType(){
-        switch (tokens.get(programCount).getValue().toUpperCase()){
+        switch (getCurrentToken().getValue().toUpperCase()){
             case "USE" -> parseUseQuery();
             case "CREATE" -> parseCreateQuery();
             case "DROP" -> parseDropQuery();
@@ -61,20 +68,17 @@ public class Parser {
     }
 
     public void parseUseQuery(){
-        Token token = getNextToken();
-        if(token.getType()!=TokenType.NAME){
+        if(!parsePlainText(getNextToken())){
             parseSuccess = false;
         }
     }
 
     public void parseCreateQuery(){
-        Token token = getNextToken();
-        String tokenValue = token.getValue().toUpperCase();
-        if(Objects.equals(tokenValue, "DATABASE")) {
+        if(tokenValue(getNextToken(), "DATABASE")){
             parseCreateDatabase();
             return;
         }
-        if(Objects.equals(tokenValue, "TABLE")){
+        if(tokenValue(getCurrentToken(), "TABLE")){
             parseCreateTable();
             return;
         }
@@ -82,26 +86,49 @@ public class Parser {
     }
 
     public void parseCreateDatabase(){
-        Token token = getNextToken();
-        if(token.getType()!=TokenType.NAME){
+        if(!parsePlainText(getNextToken())){
             parseSuccess = false;
         }
     }
 
     public void parseCreateTable(){
-        Token token = getNextToken();
-        if(token.getType()!=TokenType.NAME){
+        if(!parsePlainText(getNextToken())){
             parseSuccess = false;
             return;
         }
-        token = getNextToken();
-        if(Objects.equals(token.getValue(), "(")) parseAttributeList();
+        if(tokenValue(getNextToken(), "(")) parseAttributeList(getNextToken());
         else {
             decrementProgramCount();
         }
     }
 
-    private void parseAttributeList() {
+    private void parseAttributeList(Token token) {
+        if(tokenValue(token,")")){
+            return;
+        }
+        if(tokenValue(token, ",")) token = getNextToken();
+        parseAttributeName(token);
+    }
+
+    private void parseAttributeName(Token token){
+        Token nextToken = tokens.get(programCount+1);
+        if(parsePlainText(token)){
+            if(tokenValue(nextToken, ".")){
+                getNextToken();
+                if(parsePlainText(getNextToken())){
+                    parseAttributeList(getNextToken());
+                }else parseSuccess = false;
+            }else parseAttributeList(getNextToken());
+        } else parseSuccess = false;
+    }
+
+    private boolean parsePlainText(Token token){
+        switch (token.getType()) {
+            case INTEGER, LETTER, PLAIN_TEXT -> {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void parseDropQuery(){}

@@ -4,7 +4,7 @@ public enum TokenType {
     COMMAND,
     BOOLEAN,
     COMPARATOR,
-    NAME,
+    PLAIN_TEXT,
     STRING_LITERAL,
     LETTER,
     INTEGER,

@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Paths;
 import java.nio.file.Files;
+import java.util.ArrayList;
 
 
 /** This class implements the DB server. */
@@ -14,6 +15,9 @@ public class DBServer {
     private static String storageFolderPath;
     private String newLine = System.lineSeparator();
     private FileParser fileParser;
+    Tokeniser tokeniser;
+    static ArrayList<Token> tokens;
+    private Parser parser;
     static DatabaseList databases;
 
     public static void main(String args[]) throws IOException {
@@ -21,14 +25,10 @@ public class DBServer {
         server.blockingListenOn(8888);
     }
 
-    /**
-    * KEEP this signature otherwise we won't be able to mark your submission correctly.
-    */
     public DBServer() {
         databases = new DatabaseList();
         storageFolderPath = Paths.get("databases").toAbsolutePath().toString();
         try {
-            // Create the database storage folder if it doesn't already exist !
             Files.createDirectories(Paths.get(storageFolderPath));
         } catch(IOException ioe) {
             System.out.println("Can't seem to create database storage folder " + storageFolderPath);
@@ -50,12 +50,6 @@ public class DBServer {
         return storageFolderPath;
     }
 
-    /**
-    * KEEP this signature (i.e. {@code edu.uob.DBServer.handleCommand(String)}) otherwise we won't be
-    * able to mark your submission correctly.
-    *
-    * <p>This method handles all incoming DB commands and carries out the required actions.
-    */
     public String handleCommand(String command) {
 //        StringBuilder output = new StringBuilder();
 //        for(Table table: database.getTables().values()){
@@ -66,8 +60,9 @@ public class DBServer {
 //            output.append(newLine);
 //        }
 //        return output.toString();
-        Tokeniser tokeniser = new Tokeniser();
-        tokeniser.setup(command);
+        tokeniser = new Tokeniser(command);
+        tokens = tokeniser.getTokens();
+        parser = new Parser(tokens);
         return "tokenised";
     }
 
