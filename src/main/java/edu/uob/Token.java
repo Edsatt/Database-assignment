@@ -10,8 +10,8 @@ public class Token {
     }
 
     public TokenType setTypeSpecific (String token){
-        switch (token) {
-            case "USE", "CREATE", "DATABASE", "TABLE", "Add", "DROP", "ALTER", "INSERT", "INTO", "VALUES",
+        switch (token.toUpperCase()) {
+            case "USE", "CREATE", "DATABASE", "TABLE", "ADD", "DROP", "ALTER", "INSERT", "INTO", "VALUES",
                     "SELECT", "FROM", "WHERE", "UPDATE", "SET", "DELETE", "JOIN", "AND", "ON", "OR" -> {
                 return TokenType.COMMAND;
             }

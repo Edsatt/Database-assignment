@@ -7,20 +7,32 @@ public class Parser {
 
     private ArrayList<Token> tokens;
     private int programCount;
-    private DatabaseList databases;
     private boolean parseSuccess;
 
     public Parser(ArrayList<Token> tokens){
         this.tokens = tokens;
         this.programCount = 0;
-        this.databases = DBServer.databases;
         this.parseSuccess = true;
         parseCommand();
         System.out.println("Parse success = " +parseSuccess);
     }
 
+    public Token getNextToken(){
+        incrementProgramCount();
+        return tokens.get(programCount);
+    }
+
+    public Token getPreviousToken(){
+        decrementProgramCount();
+        return tokens.get(programCount);
+    }
+
     public void incrementProgramCount(){
         if(programCount<tokens.size()-1) programCount++;
+    }
+
+    public void decrementProgramCount(){
+        if(programCount>0) programCount --;
     }
 
     public void parseCommand(){
@@ -35,46 +47,74 @@ public class Parser {
     }
 
     public void commandType(){
-        switch (tokens.get(programCount).getValue()){
-            case "USE" -> parseUse();
-            case "CREATE" -> parseCreate();
-            case "DROP" -> parseDrop();
-            case "ALTER" -> parseAlter();
-            case "INSERT" -> parseInsert();
-            case "SELECT" -> parseSelect();
-            case "UPDATE" -> parseUpdate();
-            case "DELETE" -> parseDelete();
-            case "JOIN" -> parseJoin();
+        switch (tokens.get(programCount).getValue().toUpperCase()){
+            case "USE" -> parseUseQuery();
+            case "CREATE" -> parseCreateQuery();
+            case "DROP" -> parseDropQuery();
+            case "ALTER" -> parseAlterQuery();
+            case "INSERT" -> parseInsertQuery();
+            case "SELECT" -> parseSelectQuery();
+            case "UPDATE" -> parseUpdateQuery();
+            case "DELETE" -> parseDeleteQuery();
+            case "JOIN" -> parseJoinQuery();
         }
     }
 
-    public void parseUse(){
-        incrementProgramCount();
-        Token token = tokens.get(programCount);
+    public void parseUseQuery(){
+        Token token = getNextToken();
+        if(token.getType()!=TokenType.NAME){
+            parseSuccess = false;
+        }
+    }
+
+    public void parseCreateQuery(){
+        Token token = getNextToken();
+        String tokenValue = token.getValue().toUpperCase();
+        if(Objects.equals(tokenValue, "DATABASE")) {
+            parseCreateDatabase();
+            return;
+        }
+        if(Objects.equals(tokenValue, "TABLE")){
+            parseCreateTable();
+            return;
+        }
+        parseSuccess = false;
+    }
+
+    public void parseCreateDatabase(){
+        Token token = getNextToken();
+        if(token.getType()!=TokenType.NAME){
+            parseSuccess = false;
+        }
+    }
+
+    public void parseCreateTable(){
+        Token token = getNextToken();
         if(token.getType()!=TokenType.NAME){
             parseSuccess = false;
             return;
         }
-        String tokenValue = token.getValue();
-        for(String databaseName: databases.getDatabases().keySet())
-            if (Objects.equals(tokenValue, databaseName)) return;
-        System.out.println("Database with name " +tokenValue +" not found");
+        token = getNextToken();
+        if(Objects.equals(token.getValue(), "(")) parseAttributeList();
+        else {
+            decrementProgramCount();
+        }
     }
 
-    public void parseCreate(){}
+    private void parseAttributeList() {
+    }
 
-    public void parseDrop(){}
+    public void parseDropQuery(){}
 
-    public void parseAlter(){}
+    public void parseAlterQuery(){}
 
-    public void parseInsert(){}
+    public void parseInsertQuery(){}
 
-    public void parseSelect(){}
+    public void parseSelectQuery(){}
 
-    public void parseUpdate(){}
+    public void parseUpdateQuery(){}
 
-    public void parseDelete(){}
+    public void parseDeleteQuery(){}
 
-    public void parseJoin(){}
-
+    public void parseJoinQuery(){}
 }
