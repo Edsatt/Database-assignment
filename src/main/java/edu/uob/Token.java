@@ -36,7 +36,7 @@ public class Token {
     }
 
     public TokenType setTypeNonSpecific(String token){
-        if(token.startsWith("'") && token.endsWith("'")) return TokenType.STRING_LITERAL;
+        if(token.startsWith("'") && token.endsWith("'")) return checkStringLiteral(token);
         char[] tokenArray = token.toCharArray();
         for(char c: tokenArray){
             if(Character.isDigit(c)){
@@ -49,6 +49,16 @@ public class Token {
             }
         }
         return TokenType.INVALID;
+    }
+
+    public TokenType checkStringLiteral(String token){
+        char[] tokenArray = token.toCharArray();
+        for(char c: tokenArray){
+            if(!Character.isLetterOrDigit(c)){
+                return TokenType.INVALID;
+            }
+        }
+        return TokenType.STRING_LITERAL;
     }
 
     public String getValue() {
