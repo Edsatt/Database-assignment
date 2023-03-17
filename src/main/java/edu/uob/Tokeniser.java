@@ -20,7 +20,7 @@ public class Tokeniser {
         }
         tokenCheck();
         for (String token : tokenStrings) storeToken(token);
-        //for (Token token : tokens) printToken(token);
+        for (Token token : tokens) printToken(token);
         parse();
     }
 

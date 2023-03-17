@@ -53,8 +53,8 @@ public class Token {
 
     public TokenType checkStringLiteral(String token){
         char[] tokenArray = token.toCharArray();
-        for(char c: tokenArray){
-            if(!Character.isLetterOrDigit(c)){
+        for(int i=1; i<tokenArray.length-1; i++){
+            if(!Character.isLetterOrDigit(tokenArray[i])){
                 return TokenType.INVALID;
             }
         }
