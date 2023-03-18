@@ -18,6 +18,9 @@ public class Token {
             case "TRUE", "FALSE" -> {
                 return TokenType.BOOLEAN;
             }
+            case "NULL" -> {
+                return TokenType.NULL;
+            }
             case "==", ">",  "<",  ">=",  "<=",  "!=",  "LIKE" -> {
                 return TokenType.COMPARATOR;
             }
@@ -39,16 +42,13 @@ public class Token {
         if(token.startsWith("'") && token.endsWith("'")) return checkStringLiteral(token);
         char[] tokenArray = token.toCharArray();
         for(char c: tokenArray){
-            if(Character.isDigit(c)){
-                if(token.contains(".")) return TokenType.FLOAT;
-                else return TokenType.INTEGER;
-            }
             if(Character.isAlphabetic(c)){
                 if(token.length()>1) return TokenType.PLAIN_TEXT;
                 else return TokenType.LETTER;
             }
+            if(!Character.isDigit(c)) return TokenType.INVALID;
         }
-        return TokenType.INVALID;
+        return TokenType.INTEGER;
     }
 
     public TokenType checkStringLiteral(String token){

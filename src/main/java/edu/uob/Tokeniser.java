@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class Tokeniser {
-    private final String[] specialCharacters = {"(",")",",",";","=",">","<","!","+","-"};
+    private final String[] specialCharacters = {"(",")",",",";","=",">","<","!","+","-","."};
     private final ArrayList<String> tokenStrings = new ArrayList<>();
     private final ArrayList<Token> tokens;
 

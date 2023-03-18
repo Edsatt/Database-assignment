@@ -82,4 +82,41 @@ public class ParserTests {
         assertFalse(parser.isParseSuccess());
     }
 
+    @Test
+    public void insertTests(){
+        setup("insert into name values (true);");
+        assertTrue(parser.isParseSuccess());
+        setup("insert into name values ('value');");
+        assertTrue(parser.isParseSuccess());
+        setup("insert into name values ('value', 'value');");
+        assertTrue(parser.isParseSuccess());
+        setup("insert into name values ('value', false);");
+        assertTrue(parser.isParseSuccess());
+        setup("insert into name values (1.1);");
+        assertTrue(parser.isParseSuccess());
+        setup("insert into name values (1 .1);");
+        assertTrue(parser.isParseSuccess());
+        setup("insert into name values (123);");
+        assertTrue(parser.isParseSuccess());
+        setup("insert into name values (1 2 3);");
+        assertTrue(parser.isParseSuccess());
+        setup("insert into name values (123);");
+        assertTrue(parser.isParseSuccess());
+        setup("insert into name values (NULL, true, false, 1 2 3, 1.1 2, 123,);");
+        assertTrue(parser.isParseSuccess());
+        setup("insert into name values (value);");
+        assertFalse(parser.isParseSuccess());
+    }
+
+    @Test
+    public void selectTests(){
+        setup("select * from name;");
+        assertTrue(parser.isParseSuccess());
+        setup("select (value) from name;");
+        assertTrue(parser.isParseSuccess());
+        setup("select (value,value) from name;");
+        assertTrue(parser.isParseSuccess());
+
+    }
+
 }

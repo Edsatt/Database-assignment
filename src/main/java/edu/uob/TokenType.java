@@ -8,7 +8,7 @@ public enum TokenType {
     STRING_LITERAL,
     LETTER,
     INTEGER,
-    FLOAT,
+    NULL,
     SYMBOL,
     SPACE,
     WILD,
