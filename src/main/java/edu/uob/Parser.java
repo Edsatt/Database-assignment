@@ -3,6 +3,8 @@ package edu.uob;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import static edu.uob.TokenType.*;
+
 public class Parser {
 
     private ArrayList<Token> tokens;
@@ -15,6 +17,10 @@ public class Parser {
         this.parseSuccess = true;
         parseCommand();
         System.out.println("Parse success = " +parseSuccess);
+    }
+
+    public boolean isParseSuccess() {
+        return parseSuccess;
     }
 
     public Token getCurrentToken(){
@@ -43,8 +49,12 @@ public class Parser {
         return Objects.equals(token.getValue().toUpperCase(), query);
     }
 
+    public  boolean tokenType(Token token, TokenType type){
+        return Objects.equals(token.getType(), type);
+    }
+
     public void parseCommand(){
-        if(getCurrentToken().getType()!=TokenType.COMMAND){
+        if(!tokenType(getCurrentToken(), COMMAND)){
             parseSuccess = false;
             return;
         }else commandType();
@@ -96,18 +106,19 @@ public class Parser {
             parseSuccess = false;
             return;
         }
-        if(tokenValue(getNextToken(), "(")) parseAttributeList(getNextToken());
+        if(tokenValue(getNextToken(), "(")) parseAttributeList();
         else {
             decrementProgramCount();
         }
     }
 
-    private void parseAttributeList(Token token) {
-        if(tokenValue(token,")")){
-            return;
-        }
-        if(tokenValue(token, ",")) token = getNextToken();
-        parseAttributeName(token);
+    private void parseAttributeList() {
+        getNextToken();
+        if(tokenValue(getCurrentToken(), ")")) return;
+        parseAttributeName(getCurrentToken());
+        Token nextToken = tokens.get(programCount+1);
+        if(tokenValue(nextToken, ",")) incrementProgramCount();
+        parseAttributeList();
     }
 
     private void parseAttributeName(Token token){
@@ -115,10 +126,8 @@ public class Parser {
         if(parsePlainText(token)){
             if(tokenValue(nextToken, ".")){
                 getNextToken();
-                if(parsePlainText(getNextToken())){
-                    parseAttributeList(getNextToken());
-                }else parseSuccess = false;
-            }else parseAttributeList(getNextToken());
+                if(!parsePlainText(getNextToken())) parseSuccess = false;
+            }
         } else parseSuccess = false;
     }
 
@@ -131,9 +140,32 @@ public class Parser {
         return false;
     }
 
-    public void parseDropQuery(){}
+    public void parseDropQuery(){
+        switch (getNextToken().getValue().toUpperCase()) {
+            case "DATABASE", "TABLE" -> {
+                if(!tokenType(getNextToken(), PLAIN_TEXT)) parseSuccess = false;
+                return;
+            }
+        }
+        parseSuccess = false;
+    }
 
-    public void parseAlterQuery(){}
+    //"ALTER TABLE " [TableName] " " [AlterationType] " " [AttributeName]
+    //[AlterationType]  ::=  "ADD" | "DROP"
+
+    public void parseAlterQuery(){
+        if(tokenValue(getNextToken(), "TABLE")){
+            if(tokenValue(getNextToken(), "NAME")){
+                switch (getNextToken().getValue().toUpperCase()){
+                    case "ADD", "DROP" -> {
+                        parseAttributeName(getNextToken());
+                        return;
+                    }
+                }
+            }
+        }
+        parseSuccess = false;
+    }
 
     public void parseInsertQuery(){}
 
