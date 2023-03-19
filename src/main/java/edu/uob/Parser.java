@@ -11,16 +11,31 @@ public class Parser {
     private int programCount;
     private boolean parseSuccess;
 
+    private boolean withinBraces;
+
     public Parser(ArrayList<Token> tokens){
         this.tokens = tokens;
         this.programCount = 0;
         this.parseSuccess = true;
+        this.withinBraces = false;
         parseCommand();
         System.out.println("Parse success = " +parseSuccess);
     }
 
     public boolean isParseSuccess() {
         return parseSuccess;
+    }
+
+    public void setParseSuccess(boolean parseSuccess) {
+        this.parseSuccess = parseSuccess;
+    }
+
+    public boolean isWithinBraces() {
+        return withinBraces;
+    }
+
+    public void setWithinBraces(boolean withinBraces){
+        this.withinBraces = withinBraces;
     }
 
     public Token getCurrentToken(){
@@ -41,7 +56,7 @@ public class Parser {
     }
 
     public Token getNextToken(){
-        incrementProgramCount();
+        incrementProgramCount(1);
         return tokens.get(programCount);
     }
 
@@ -50,8 +65,8 @@ public class Parser {
         return tokens.get(programCount);
     }
 
-    public void incrementProgramCount(){
-        if(programCount<tokens.size()-1) programCount++;
+    public void incrementProgramCount(int increment){
+        if(programCount<tokens.size()-increment) programCount = programCount+increment;
     }
 
     public void decrementProgramCount(){
@@ -68,11 +83,11 @@ public class Parser {
 
     public void parseCommand(){
         if(!tokenType(getCurrentToken(), COMMAND)){
-            parseSuccess = false;
+            setParseSuccess(false);
             return;
         }else commandType();
-        incrementProgramCount();
-        if(!tokenValue(getCurrentToken(), ";")) parseSuccess = false;
+        incrementProgramCount(1);
+        if(!tokenValue(getCurrentToken(), ";")) setParseSuccess(false);
 
     }
 
@@ -91,8 +106,9 @@ public class Parser {
     }
 
     public void parseUseQuery(){
-        if(!parsePlainText(getNextToken())){
-            parseSuccess = false;
+        incrementProgramCount(1);
+        if(!parsePlainText()){
+            setParseSuccess(false);
         }
     }
 
@@ -105,50 +121,52 @@ public class Parser {
             parseCreateTable();
             return;
         }
-        parseSuccess = false;
+        setParseSuccess(false);
     }
 
     public void parseCreateDatabase(){
-        if(!parsePlainText(getNextToken())){
-            parseSuccess = false;
+        incrementProgramCount(1);
+        if(!parsePlainText()){
+            setParseSuccess(false);
         }
     }
 
     public void parseCreateTable(){
-        if(!parsePlainText(getNextToken())){
-            parseSuccess = false;
+        incrementProgramCount(1);
+        if(!parsePlainText()){
+            setParseSuccess(false);
             return;
         }
-        if(tokenValue(getNextToken(), "(")) {
+        if(checkNextToken("(")) {
+            incrementProgramCount(1);
             parseAttributeList();
-            if(!tokenValue(getNextToken(), ")")) parseSuccess = false;
-        }
-        else {
-            decrementProgramCount();
+            if(!tokenValue(getNextToken(), ")")) setParseSuccess(false);
         }
     }
 
     private void parseAttributeList() {
-        if(parseAttributeName(getNextToken())){
-            if(tokenValue(getNextToken(), ",")){
+        incrementProgramCount(1);
+        if(parseAttributeName()){
+            if(checkNextToken(",")){
+                incrementProgramCount(1);
                 parseAttributeList();
             }
-        }decrementProgramCount();
+        }
     }
 
-    private boolean parseAttributeName(Token token){
-        if(parsePlainText(token)){
+    private boolean parseAttributeName(){
+        if(parsePlainText()){
             if(checkNextToken(".")){
-                getNextToken();
-                if(parsePlainText(getNextToken())) return true;
+                incrementProgramCount(2);
+                if(parsePlainText()) return true;
             }
             return true;
         }
         return false;
     }
 
-    private boolean parsePlainText(Token token){
-        switch (token.getType()) {
+    private boolean parsePlainText(){
+        switch (getCurrentToken().getType()) {
             case INTEGER, LETTER, PLAIN_TEXT -> {
                 return true;
             }
@@ -159,11 +177,11 @@ public class Parser {
     public void parseDropQuery(){
         switch (getNextToken().getValue().toUpperCase()) {
             case "DATABASE", "TABLE" -> {
-                if(!tokenType(getNextToken(), PLAIN_TEXT)) parseSuccess = false;
+                if(!tokenType(getNextToken(), PLAIN_TEXT)) setParseSuccess(false);
                 return;
             }
         }
-        parseSuccess = false;
+        setParseSuccess(false);
     }
 
     public void parseAlterQuery(){
@@ -171,37 +189,41 @@ public class Parser {
             if(tokenValue(getNextToken(), "NAME")){
                 switch (getNextToken().getValue().toUpperCase()){
                     case "ADD", "DROP" -> {
-                        parseAttributeName(getNextToken());
+                        incrementProgramCount(1);
+                        parseAttributeName();
                         return;
                     }
                 }
             }
         }
-        parseSuccess = false;
+        setParseSuccess(false);
     }
-//<Insert>          ::=  "INSERT INTO " [TableName] " VALUES(" <ValueList> ")"
 
     public void parseInsertQuery(){
         if(tokenValue(getNextToken(), "INTO")) {
-            if (parsePlainText(getNextToken())) {
+            incrementProgramCount(1);
+            if (parsePlainText()){
                 if (tokenValue(getNextToken(), "VALUES")) {
-                    if(tokenValue(getNextToken(), "(")){
+                    if(checkNextToken("(")){
+                        incrementProgramCount(1);
                         parseValueList();
+                        if(!tokenValue(getNextToken(), ")")) setParseSuccess(false);
                         return;
                     }
                 }
             }
         }
-        parseSuccess = false;
+        setParseSuccess(false);
     }
 
     public void parseValueList(){
-        getNextToken();
-        if(tokenValue(getCurrentToken(), ")")) return;
+        incrementProgramCount(1);
         if(parseValue()){
-            if(checkNextToken(",")) incrementProgramCount();
-            parseValueList();
-        } else parseSuccess = false;
+            if(checkNextToken(",")){
+                incrementProgramCount(1);
+                parseValueList();
+            }
+        } else setParseSuccess(false);
     }
 
     public boolean parseValue(){
@@ -255,36 +277,52 @@ public class Parser {
         return true;
     }
 
-    //<Select>::=  "SELECT " <WildAttribList> " FROM " [TableName] | "SELECT " <WildAttribList> " FROM " [TableName] " WHERE " <Condition>
-    //<WildAttribList>  ::=  <AttributeList> | "*"
-    //<Condition>       ::=  "(" <Condition> [BoolOperator] <Condition> ")" | <Condition> [BoolOperator] <Condition>
-    // | "(" [AttributeName] [Comparator] [Value] ")" | [AttributeName] [Comparator] [Value]
     public void parseSelectQuery() {
-        incrementProgramCount();
         parseWildAttribList();
         if (tokenValue(getNextToken(), "FROM")) {
             if (tokenType(getNextToken(), PLAIN_TEXT)) {
                 if (checkNextToken("WHERE")) {
-                    incrementProgramCount();
-                    parseCondition();
-                }else return;
+                    incrementProgramCount(1);
+                    conditionBraceCheck();
+                    if(isWithinBraces()) setParseSuccess(false);
+                }
             }
+            return;
         }
-        parseSuccess = false;
+        setParseSuccess(false);
     }
     public void parseWildAttribList(){
         if(!tokenType(getCurrentToken(), WILD)) parseAttributeList();
     }
 
+    public void conditionBraceCheck(){
+        if(checkNextToken("(")){
+            if(isWithinBraces()) {
+                setParseSuccess(false);
+                return;
+            }
+            setWithinBraces(true);
+            incrementProgramCount(1);
+            parseCondition();
+        }else parseCondition();
+    }
 
     public void parseCondition(){
+        incrementProgramCount(1);
         if(parseConditionComparator()){
-            incrementProgramCount();
+            incrementProgramCount(1);
+            if(isWithinBraces()) checkClosingBrace();
             if(parseBoolOp()){
-                incrementProgramCount();
-                parseCondition();
-            }
-        }else parseSuccess = false;
+                conditionBraceCheck();
+            }else decrementProgramCount();
+        }else setParseSuccess(false);
+    }
+
+    public void checkClosingBrace(){
+        if(tokenValue(getCurrentToken(), ")")) {
+            incrementProgramCount(1);
+            setWithinBraces(false);
+        }
     }
 
     public boolean parseBoolOp(){
@@ -297,16 +335,56 @@ public class Parser {
     }
 
     public boolean parseConditionComparator(){
-        parseAttributeName(getCurrentToken());
+        parseAttributeName();
         if(tokenType(getNextToken(),COMPARATOR)) {
+            incrementProgramCount(1);
             return parseValue();
         }
         return false;
     }
 
-    public void parseUpdateQuery(){}
+    public void parseUpdateQuery(){
+        if(tokenType(getNextToken(), PLAIN_TEXT)){
+            if(tokenValue(getNextToken(),"SET")){
+                parseNameValueList();
+                if(tokenValue(getNextToken(), "WHERE")){
+                    conditionBraceCheck();
+                }
+            }
+        }
+    }
 
-    public void parseDeleteQuery(){}
+    private void parseNameValueList() {
+        incrementProgramCount(1);
+        if(parseNameValuePair()){
+            if(checkNextToken(",")){
+                incrementProgramCount(1);
+                parseNameValueList();
+            }
+        } else setParseSuccess(false);
+    }
+
+    private boolean parseNameValuePair(){
+        if(parseAttributeName()){
+            if(tokenValue(getNextToken(), "=")){
+                incrementProgramCount(1);
+                return(parseValue());
+            }
+        }
+        return false;
+    }
+    public void parseDeleteQuery(){
+        if(tokenValue(getNextToken(), "FROM")){
+            incrementProgramCount(1);
+            if(parsePlainText()){
+                if(tokenValue(getNextToken(),"WHERE")){
+                    conditionBraceCheck();
+                    return;
+                }
+            }
+        }
+        setParseSuccess(false);
+    }
 
     public void parseJoinQuery(){}
 }

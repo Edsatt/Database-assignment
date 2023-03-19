@@ -102,7 +102,7 @@ public class ParserTests {
         assertTrue(parser.isParseSuccess());
         setup("insert into name values (123);");
         assertTrue(parser.isParseSuccess());
-        setup("insert into name values (NULL, true, false, 1 2 3, 1.1 2, 123,);");
+        setup("insert into name values (NULL, true, false, 1 2 3, 1.1 2, 123);");
         assertTrue(parser.isParseSuccess());
         setup("insert into name values (value);");
         assertFalse(parser.isParseSuccess());
@@ -112,11 +112,55 @@ public class ParserTests {
     public void selectTests(){
         setup("select * from name;");
         assertTrue(parser.isParseSuccess());
-        setup("select (value) from name;");
+        setup("select value from name;");
         assertTrue(parser.isParseSuccess());
-        setup("select (value,value) from name;");
+        setup("select name.value from name;");
         assertTrue(parser.isParseSuccess());
+        setup("select value,value from name;");
+        assertTrue(parser.isParseSuccess());
+        setup("select value from name where value == false;");
+        assertTrue(parser.isParseSuccess());
+        setup("select * from name where value == FALSE and (value > 35) and value == 29;");
+        assertTrue(parser.isParseSuccess());
+        setup("select * from name where (value == FALSE) or (value > 35);");
+        assertTrue(parser.isParseSuccess());
+        setup("select * from name where (value == FALSE) and value >= 35;");
+        assertTrue(parser.isParseSuccess());
+        setup("select * from name where (value == FALSE and (value <= 35);");
+        assertFalse(parser.isParseSuccess());
+        setup("select * from name where (value like FALSE and value > 35);");
+        assertTrue(parser.isParseSuccess());
+        setup("select * from name where value == FALSE and) (value > 35;");
+        assertFalse(parser.isParseSuccess());
+        setup("select * from name where value == FALSE and (value > 35;");
+        assertFalse(parser.isParseSuccess());
+        setup("select value from name where value == value;");
+        assertFalse(parser.isParseSuccess());
+        setup("select value from name where value == 'value';");
+        assertTrue(parser.isParseSuccess());
+    }
 
+    //    <Update>          ::=  "UPDATE " [TableName] " SET " <NameValueList> " WHERE " <Condition>
+//    <NameValueList>   ::=  <NameValuePair> | <NameValuePair> "," <NameValueList>
+//    <NameValuePair>   ::=  [AttributeName] "=" [Value]
+    @Test
+    public void updateTests() {
+        setup("update name set name = 'value' where value like 'value';");
+        assertTrue(parser.isParseSuccess());
+        setup("update name set table = 'value' where value like 'value';");
+        assertFalse(parser.isParseSuccess());
+        setup("update name set name = 'value' where (value like 'value');");
+        assertTrue(parser.isParseSuccess());
+    }
+
+    @Test
+    public void deleteTests(){
+        setup("delete from name where value like 'value';");
+        assertTrue(parser.isParseSuccess());
+        setup("delete from name where (value > 35);");
+        assertTrue(parser.isParseSuccess());
+        setup("delete from table where (value > 35);");
+        assertFalse(parser.isParseSuccess());
     }
 
 }
