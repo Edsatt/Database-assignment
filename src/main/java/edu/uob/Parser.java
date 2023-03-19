@@ -386,5 +386,25 @@ public class Parser {
         setParseSuccess(false);
     }
 
-    public void parseJoinQuery(){}
+    //"JOIN " [TableName] " AND " [TableName] " ON " [AttributeName] " AND " [AttributeName]
+    public void parseJoinQuery(){
+        incrementProgramCount(1);
+        if(parsePlainText()){
+            if(tokenValue(getNextToken(), "AND")){
+                incrementProgramCount(1);
+                if(parsePlainText()){
+                    if(tokenValue(getNextToken(), "ON")){
+                        incrementProgramCount(1);
+                        parseAttributeName();
+                        if(tokenValue(getNextToken(), "AND")) {
+                            incrementProgramCount(1);
+                            parseAttributeName();
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        setParseSuccess(false);
+    }
 }

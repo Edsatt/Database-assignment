@@ -1,11 +1,7 @@
 package edu.uob;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-
 import java.util.ArrayList;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ParserTests {
@@ -140,9 +136,6 @@ public class ParserTests {
         assertTrue(parser.isParseSuccess());
     }
 
-    //    <Update>          ::=  "UPDATE " [TableName] " SET " <NameValueList> " WHERE " <Condition>
-//    <NameValueList>   ::=  <NameValuePair> | <NameValuePair> "," <NameValueList>
-//    <NameValuePair>   ::=  [AttributeName] "=" [Value]
     @Test
     public void updateTests() {
         setup("update name set name = 'value' where value like 'value';");
@@ -160,6 +153,16 @@ public class ParserTests {
         setup("delete from name where (value > 35);");
         assertTrue(parser.isParseSuccess());
         setup("delete from table where (value > 35);");
+        assertFalse(parser.isParseSuccess());
+    }
+
+    @Test
+    public void joinTests(){
+        setup("join table_name and table_name on name and name;");
+        assertTrue(parser.isParseSuccess());
+        setup("join table and table_name on name and name;");
+        assertFalse(parser.isParseSuccess());
+        setup("join table_name and table_name on name;");
         assertFalse(parser.isParseSuccess());
     }
 
