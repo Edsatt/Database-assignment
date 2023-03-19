@@ -1,6 +1,7 @@
 package edu.uob;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 public class DatabaseList {
 
@@ -15,6 +16,15 @@ public class DatabaseList {
 
     public void addDatabase(String name, Database database){
         databases.put(name, database);
+    }
+
+    public void searchDatabase(String name) throws DatabaseNotFoundException{
+        for(String dbName: databases.keySet()){
+            if(Objects.equals(dbName, name)){
+                return;
+            }
+        }
+        throw new DatabaseNotFoundException("Database with name " +name +" not found");
     }
 
     public Database getDatabase(String name){

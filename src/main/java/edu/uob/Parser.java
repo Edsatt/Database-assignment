@@ -11,14 +11,14 @@ public class Parser {
     private int programCount;
     private boolean parseSuccess;
     private boolean withinBraces;
+    DBCommand command;
 
     public Parser(ArrayList<Token> tokens){
         this.tokens = tokens;
         this.programCount = 0;
         this.parseSuccess = true;
         this.withinBraces = false;
-        parseCommand();
-        System.out.println("Parse success = " +parseSuccess);
+        //System.out.println("Parse success = " +parseSuccess);
     }
 
     public boolean isParseSuccess() {
@@ -40,6 +40,8 @@ public class Parser {
     public Token getCurrentToken(){
         return tokens.get(programCount);
     }
+
+    // append error message string to parse fail attribute. After parsing, check string. If null, throw exception with error message.
 
     public boolean checkNextToken(Object query) {
         if (programCount < tokens.size() - 1) {
@@ -75,13 +77,13 @@ public class Parser {
         return Objects.equals(token.getType(), type);
     }
 
-    public void parseCommand(){
+    public DBCommand parseCommand(){
         if(!tokenType(getCurrentToken(), COMMAND)){
             setParseSuccess(false);
-            return;
         }else commandType();
         incrementProgramCount(1);
         if(!tokenValue(getCurrentToken(), ";")) setParseSuccess(false);
+        return command;
     }
 
     public void commandType(){
@@ -99,14 +101,20 @@ public class Parser {
     }
 
     public void parseUseQuery(){
+        buildUseCommand();
         incrementProgramCount(1);
         if(!parsePlainText()){
             setParseSuccess(false);
         }
+        command.setId(getCurrentToken().getValue());
+    }
+    public void buildUseCommand(){
+        command = new UseCommand();
     }
 
     public void parseCreateQuery(){
         if(tokenValue(getNextToken(), "DATABASE")){
+            buildCreateDBCommand();
             parseCreateDatabase();
             return;
         }
@@ -121,7 +129,11 @@ public class Parser {
         incrementProgramCount(1);
         if(!parsePlainText()){
             setParseSuccess(false);
-        }
+        }command.setId(getCurrentToken().getValue());
+    }
+
+    public void buildCreateDBCommand(){
+        command = new CreateDBCommand();
     }
 
     public void parseCreateTable(){

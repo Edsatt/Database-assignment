@@ -14,11 +14,12 @@ public class DBServer {
     private static final char END_OF_TRANSMISSION = 4;
     private static String storageFolderPath;
     private String newLine = System.lineSeparator();
-    private FileParser fileParser;
     Tokeniser tokeniser;
     static ArrayList<Token> tokens;
-    private Parser parser;
     static DatabaseList databases;
+    static Database database;
+    private Table table;
+    static String output;
 
     public static void main(String args[]) throws IOException {
         DBServer server = new DBServer();
@@ -41,7 +42,7 @@ public class DBServer {
                 .listFiles((dir, name) -> name.endsWith(".tab"));
         assert files != null;
         for(File file: files) {
-            this.fileParser = new FileParser();
+            FileParser fileParser = new FileParser();
             fileParser.fileReader(file.getPath());
         }
     }
@@ -50,7 +51,7 @@ public class DBServer {
         return storageFolderPath;
     }
 
-    public String handleCommand(String command) {
+    public String handleCommand(String command) throws Exception {
 //        StringBuilder output = new StringBuilder();
 //        for(Table table: database.getTables().values()){
 //            output.append("Table name: ").append(table.getTableName()).append(newLine);
@@ -60,10 +61,31 @@ public class DBServer {
 //            output.append(newLine);
 //        }
 //        return output.toString();
+        output = "[OK]";
         tokeniser = new Tokeniser(command);
         tokens = tokeniser.getTokens();
-        parser = new Parser(tokens);
-        return "tokenised";
+        Parser parser = new Parser(tokens);
+        if(parser.isParseSuccess()){
+            DBCommand DBCommand = parser.parseCommand();
+            DBCommand.interpretCommand();
+        }
+        return output;
+    }
+
+    public void setDatabase(Database database){
+        DBServer.database = database;
+    }
+
+    public Database getDatabase(){
+        return database;
+    }
+
+    public void setTable(Table table){
+        this.table = table;
+    }
+
+    public Table getTable(){
+        return table;
     }
 
     //  === Methods below handle networking aspects of the project - you will not need to change these ! ===
@@ -97,6 +119,8 @@ public class DBServer {
                 writer.write("\n" + END_OF_TRANSMISSION + "\n");
                 writer.flush();
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }
