@@ -7,10 +7,9 @@ import static edu.uob.TokenType.*;
 
 public class Parser {
 
-    private ArrayList<Token> tokens;
+    private final ArrayList<Token> tokens;
     private int programCount;
     private boolean parseSuccess;
-
     private boolean withinBraces;
 
     public Parser(ArrayList<Token> tokens){
@@ -60,11 +59,6 @@ public class Parser {
         return tokens.get(programCount);
     }
 
-    public Token getPreviousToken(){
-        decrementProgramCount();
-        return tokens.get(programCount);
-    }
-
     public void incrementProgramCount(int increment){
         if(programCount<tokens.size()-increment) programCount = programCount+increment;
     }
@@ -88,7 +82,6 @@ public class Parser {
         }else commandType();
         incrementProgramCount(1);
         if(!tokenValue(getCurrentToken(), ";")) setParseSuccess(false);
-
     }
 
     public void commandType(){
@@ -247,9 +240,7 @@ public class Parser {
 
     public boolean parseFloatOrInteger(){
         switch (getCurrentToken().getValue()) {
-            case "-", "+" -> {
-                getNextToken();
-            }
+            case "-", "+" -> getNextToken();
         }
         return parseFloat() || parseInteger();
     }
@@ -349,9 +340,11 @@ public class Parser {
                 parseNameValueList();
                 if(tokenValue(getNextToken(), "WHERE")){
                     conditionBraceCheck();
+                    return;
                 }
             }
         }
+        setParseSuccess(false);
     }
 
     private void parseNameValueList() {
@@ -386,7 +379,6 @@ public class Parser {
         setParseSuccess(false);
     }
 
-    //"JOIN " [TableName] " AND " [TableName] " ON " [AttributeName] " AND " [AttributeName]
     public void parseJoinQuery(){
         incrementProgramCount(1);
         if(parsePlainText()){
