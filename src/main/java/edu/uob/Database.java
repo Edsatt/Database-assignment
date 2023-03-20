@@ -3,9 +3,15 @@ import java.util.*;
 //TableList contains a hashmap of the different table names
 public class Database {
     private LinkedHashMap<String, Table> tables;
+    private String databaseName;
 
-    public Database(){
+    public Database(String name){
         tables = new LinkedHashMap<>();
+        this.databaseName = name;
+    }
+
+    public String getDatabaseName(){
+        return databaseName;
     }
 
     public LinkedHashMap<String, Table> getTables(){
@@ -38,7 +44,7 @@ public class Database {
 
     public void outputTables(String storageFolderPath){
         for(String tableName: tables.keySet()){
-            getTable(tableName).outputTable(storageFolderPath, tableName);
+            getTable(tableName).outputTable(storageFolderPath);
         }
     }
 

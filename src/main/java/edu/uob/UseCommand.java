@@ -1,22 +1,27 @@
 package edu.uob;
 
+import java.io.FileNotFoundException;
+
 public class UseCommand extends DBCommand{
 
-    public UseCommand(){
-        this.databases = DBServer.databases;
+    public void setServer(DBServer server){
+        this.server = server;
     }
 
-    @Override
     public void setId(String dbName){
         this.id = dbName;
     }
-    @Override
+
     public void interpretCommand() {
+        server.resetCurrentFolderPath();
         try{
-            databases.searchDatabase(id);
-        }catch(DatabaseNotFoundException e){
-            DBServer.output=("Database with name " +id +" not found");
+            server.findFile(id);
+        } catch (FileNotFoundException e) {
+            DBServer.output=("[ERROR]" +newLine +"File with name " +id +" not found");
+            return;
         }
-        DBServer.database = databases.getDatabase(id);
+        server.setCurrentFolderPath(id);
+        database = new Database(id);
+        server.setDatabase(database);
     }
 }

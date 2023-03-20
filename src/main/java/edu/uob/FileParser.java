@@ -60,7 +60,7 @@ public class FileParser {
         if(Objects.equals(table.getColumnName(1), "id")){
             table.removeColumn("id");
         }
-        Database database = new Database();
+        Database database = new Database("file_databases");
         database.addTable(tableName, table);
         DBServer.databases.addDatabase("file_databases", database);
     }

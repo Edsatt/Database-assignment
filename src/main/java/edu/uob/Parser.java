@@ -151,6 +151,7 @@ public class Parser {
             return;
         }
         if(tokenValue(getCurrentToken(), "TABLE")){
+            buildCreateTableCommand();
             parseCreateTable();
             return;
         }
@@ -173,7 +174,7 @@ public class Parser {
         if(!parsePlainText()){
             logError(getCurrentToken().getValue() +" is not a valid table name");
             return;
-        }
+        }command.setId(getCurrentToken().getValue());
         if(checkNextToken("(")) {
             incrementProgramCount(1);
             parseAttributeList();
@@ -181,9 +182,14 @@ public class Parser {
         }
     }
 
+    public void buildCreateTableCommand(){
+        command = new CreateTableCommand();
+    }
+
     private void parseAttributeList() {
         incrementProgramCount(1);
         if(parseAttributeName()){
+            command.createList(getCurrentToken().getValue());
             if(checkNextToken(",")){
                 incrementProgramCount(1);
                 parseAttributeList();
@@ -212,16 +218,37 @@ public class Parser {
     }
 
     public void parseDropQuery(){
-        switch (getNextToken().getValue().toUpperCase()) {
+        String tokenValue = getNextToken().getValue().toUpperCase();
+        switch (tokenValue) {
             case "DATABASE", "TABLE" -> {
+                interpretDropQuery(tokenValue);
                 if(!tokenType(getNextToken(), PLAIN_TEXT)) {
                     logError("invalid DATABASE or TABLE name " +getCurrentToken().getValue());
-                }
+                }else command.setId(getCurrentToken().getValue());
                 return;
             }
         }
         logError("Expecting DATABASE or TABLE following DROP command");
     }
+
+    public void interpretDropQuery(String tokenValue){
+        switch(tokenValue){
+            case "DATABASE" -> buildDropDBCommand();
+            case "TABLE" -> buildDropTableCommand();
+        }
+    }
+
+    public void buildDropDBCommand(){
+        command = new DropDBCommand();
+    }
+
+    private void buildDropTableCommand() {
+        command = new DropTableCommand();
+    }
+
+//    public void buildCreateTableCommand(){
+//        command = new CreateTableCommand();
+//    }
 
     public void parseAlterQuery(){
         if(tokenValue(getNextToken(), "TABLE")){

@@ -111,10 +111,9 @@ public class Table {
     }
 
     //need to write an exception for this method in case table doesn't exist
-    public void outputTable(String storageFolderPath, String tableName){
-        String fileName = (storageFolderPath + File.separator + tableName + ".tab");
+    public void outputTable(String filePath){
         try {
-            BufferedWriter buffWriter = new BufferedWriter(new FileWriter(fileName));
+            BufferedWriter buffWriter = new BufferedWriter(new FileWriter(filePath));
             for (Row row : rows.values()) {
                 String rowString = String.join("\t", row.getValues());
                 buffWriter.write(rowString);
@@ -123,7 +122,6 @@ public class Table {
             buffWriter.close();
         } catch(IOException ioe) {
             System.out.println("Can't write to file");
-            ioe.printStackTrace();
         }
     }
 
