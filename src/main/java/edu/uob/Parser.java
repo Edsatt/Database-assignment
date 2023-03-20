@@ -11,6 +11,10 @@ public class Parser {
     private int programCount;
     private boolean parseSuccess;
     private boolean withinBraces;
+    private int openBracketCnt;
+    private int closedBracketCnt;
+
+    public String outputString;
     DBCommand command;
 
     public Parser(ArrayList<Token> tokens){
@@ -18,7 +22,19 @@ public class Parser {
         this.programCount = 0;
         this.parseSuccess = true;
         this.withinBraces = false;
+        this.outputString = "";
         //System.out.println("Parse success = " +parseSuccess);
+    }
+
+    public void outputParseResult(){
+        if(isParseSuccess()) outputString = "[OK]";
+        DBServer.output = outputString;
+    }
+
+    public void logError(String message){
+        if(outputString.isEmpty()) outputString = outputString.concat(message);
+        else outputString = outputString.concat(System.lineSeparator() +message);
+        setParseSuccess(false);
     }
 
     public boolean isParseSuccess() {
@@ -77,12 +93,28 @@ public class Parser {
         return Objects.equals(token.getType(), type);
     }
 
+    public void initialiseBrackets(){
+        openBracketCnt = closedBracketCnt = 0;
+    }
+
+    public void addOpenBracketCnt(){
+        openBracketCnt++;
+    }
+
+    public void addClosedBracketCnt(){
+        closedBracketCnt++;
+    }
+
+    public boolean equalNumBraces(){
+        return openBracketCnt != closedBracketCnt;
+    }
+
     public DBCommand parseCommand(){
         if(!tokenType(getCurrentToken(), COMMAND)){
-            setParseSuccess(false);
+            logError("Expecting command?");
         }else commandType();
         incrementProgramCount(1);
-        if(!tokenValue(getCurrentToken(), ";")) setParseSuccess(false);
+        if(!tokenValue(getCurrentToken(), ";")) logError("Expecting ; at end of query?");
         return command;
     }
 
@@ -104,7 +136,7 @@ public class Parser {
         buildUseCommand();
         incrementProgramCount(1);
         if(!parsePlainText()){
-            setParseSuccess(false);
+            logError(getCurrentToken().getValue() +" is not a valid database name");
         }
         command.setId(getCurrentToken().getValue());
     }
@@ -122,13 +154,13 @@ public class Parser {
             parseCreateTable();
             return;
         }
-        setParseSuccess(false);
+        logError("Expecting DATABASE or TABLE following CREATE command");
     }
 
     public void parseCreateDatabase(){
         incrementProgramCount(1);
         if(!parsePlainText()){
-            setParseSuccess(false);
+            logError(getCurrentToken().getValue() +" is not a valid database name");
         }command.setId(getCurrentToken().getValue());
     }
 
@@ -139,13 +171,13 @@ public class Parser {
     public void parseCreateTable(){
         incrementProgramCount(1);
         if(!parsePlainText()){
-            setParseSuccess(false);
+            logError(getCurrentToken().getValue() +" is not a valid table name");
             return;
         }
         if(checkNextToken("(")) {
             incrementProgramCount(1);
             parseAttributeList();
-            if(!tokenValue(getNextToken(), ")")) setParseSuccess(false);
+            if(!tokenValue(getNextToken(), ")")) logError("Expecting braces?");
         }
     }
 
@@ -182,11 +214,13 @@ public class Parser {
     public void parseDropQuery(){
         switch (getNextToken().getValue().toUpperCase()) {
             case "DATABASE", "TABLE" -> {
-                if(!tokenType(getNextToken(), PLAIN_TEXT)) setParseSuccess(false);
+                if(!tokenType(getNextToken(), PLAIN_TEXT)) {
+                    logError("invalid DATABASE or TABLE name " +getCurrentToken().getValue());
+                }
                 return;
             }
         }
-        setParseSuccess(false);
+        logError("Expecting DATABASE or TABLE following DROP command");
     }
 
     public void parseAlterQuery(){
@@ -201,7 +235,7 @@ public class Parser {
                 }
             }
         }
-        setParseSuccess(false);
+        logError("Error with ALTER command syntax");
     }
 
     public void parseInsertQuery(){
@@ -212,13 +246,15 @@ public class Parser {
                     if(checkNextToken("(")){
                         incrementProgramCount(1);
                         parseValueList();
-                        if(!tokenValue(getNextToken(), ")")) setParseSuccess(false);
+                        if(!tokenValue(getNextToken(), ")")) {
+                            logError("Missing braces in query");
+                        }
                         return;
                     }
                 }
             }
         }
-        setParseSuccess(false);
+        logError("Error with INSERT query syntax");
     }
 
     public void parseValueList(){
@@ -228,7 +264,7 @@ public class Parser {
                 incrementProgramCount(1);
                 parseValueList();
             }
-        } else setParseSuccess(false);
+        } else logError("Expecting value or list of values");
     }
 
     public boolean parseValue(){
@@ -286,13 +322,16 @@ public class Parser {
             if (tokenType(getNextToken(), PLAIN_TEXT)) {
                 if (checkNextToken("WHERE")) {
                     incrementProgramCount(1);
+                    initialiseBrackets();
                     conditionBraceCheck();
-                    if(isWithinBraces()) setParseSuccess(false);
+                    if(isWithinBraces() || equalNumBraces()) {
+                        logError("Unexpected braces found in query");
+                    }
                 }
             }
             return;
         }
-        setParseSuccess(false);
+        logError("Error with SELECT query syntax");
     }
     public void parseWildAttribList(){
         if(!tokenType(getCurrentToken(), WILD)) parseAttributeList();
@@ -301,11 +340,16 @@ public class Parser {
     public void conditionBraceCheck(){
         if(checkNextToken("(")){
             if(isWithinBraces()) {
-                setParseSuccess(false);
+                logError("Unexpected brace within query");
                 return;
             }
             setWithinBraces(true);
+            addOpenBracketCnt();
             incrementProgramCount(1);
+            while(checkNextToken("(")) {
+                incrementProgramCount(1);
+                addOpenBracketCnt();
+            }
             parseCondition();
         }else parseCondition();
     }
@@ -318,12 +362,14 @@ public class Parser {
             if(parseBoolOp()){
                 conditionBraceCheck();
             }else decrementProgramCount();
-        }else setParseSuccess(false);
+        }else logError("Error with condition syntax");
     }
 
     public void checkClosingBrace(){
         if(tokenValue(getCurrentToken(), ")")) {
             incrementProgramCount(1);
+            addClosedBracketCnt();
+            checkClosingBrace();
             setWithinBraces(false);
         }
     }
@@ -351,12 +397,16 @@ public class Parser {
             if(tokenValue(getNextToken(),"SET")){
                 parseNameValueList();
                 if(tokenValue(getNextToken(), "WHERE")){
+                    initialiseBrackets();
                     conditionBraceCheck();
+                    if(equalNumBraces()) {
+                        logError("Unexpected braces in query");
+                    }
                     return;
                 }
             }
         }
-        setParseSuccess(false);
+        logError("Error with UPDATE query syntax");
     }
 
     private void parseNameValueList() {
@@ -366,7 +416,7 @@ public class Parser {
                 incrementProgramCount(1);
                 parseNameValueList();
             }
-        } else setParseSuccess(false);
+        } else logError("Expecting name value pair");
     }
 
     private boolean parseNameValuePair(){
@@ -383,12 +433,14 @@ public class Parser {
             incrementProgramCount(1);
             if(parsePlainText()){
                 if(tokenValue(getNextToken(),"WHERE")){
+                    initialiseBrackets();
                     conditionBraceCheck();
+                    if(equalNumBraces()) logError("Unexpected braces within query");
                     return;
                 }
             }
         }
-        setParseSuccess(false);
+        logError("Error in DELETE query syntax");
     }
 
     public void parseJoinQuery(){
@@ -409,6 +461,6 @@ public class Parser {
                 }
             }
         }
-        setParseSuccess(false);
+        logError("Error in JOIN query syntax");
     }
 }

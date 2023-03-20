@@ -61,14 +61,14 @@ public class DBServer {
 //            output.append(newLine);
 //        }
 //        return output.toString();
-        output = "[OK]";
         tokeniser = new Tokeniser(command);
         tokens = tokeniser.getTokens();
         Parser parser = new Parser(tokens);
-        if(parser.isParseSuccess()){
-            DBCommand DBCommand = parser.parseCommand();
-            DBCommand.interpretCommand();
-        }
+        DBCommand DBCommand = parser.parseCommand();
+        parser.outputParseResult();
+//        if(parser.isParseSuccess()){
+//            DBCommand.interpretCommand();
+//        }
         return output;
     }
 

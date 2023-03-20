@@ -13,6 +13,7 @@ public class ParserTests {
         tokeniser = new Tokeniser(command);
         tokens = tokeniser.getTokens();
         parser = new Parser(tokens);
+        parser.parseCommand();
     }
 
 
@@ -121,6 +122,8 @@ public class ParserTests {
         setup("select * from name where (value == FALSE) or (value > 35);");
         assertTrue(parser.isParseSuccess());
         setup("select * from name where (value == FALSE) and value >= 35;");
+        assertTrue(parser.isParseSuccess());
+        setup("select * from name where (((value == FALSE) and (value >= 35)) and ((value == FALSE) and (value >= 35)));");
         assertTrue(parser.isParseSuccess());
         setup("select * from name where (value == FALSE and (value <= 35);");
         assertFalse(parser.isParseSuccess());
