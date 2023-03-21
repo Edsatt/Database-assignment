@@ -16,6 +16,7 @@ public class Parser {
     public String outputString;
     private String attributeName;
     DBCommand command;
+    private String digitString;
 
     public Parser(ArrayList<Token> tokens){
         this.tokens = tokens;
@@ -24,7 +25,8 @@ public class Parser {
         this.withinBraces = false;
         this.outputString = "";
         this.attributeName = "";
-        //System.out.println("Parse success = " +parseSuccess);
+        this.digitString = "";
+
     }
 
     public void outputParseResult(){
@@ -310,19 +312,31 @@ public class Parser {
     public void parseValueList(){
         incrementProgramCount(1);
         if(parseValue()){
-            command.createValueList(getCurrentToken().getValue());
             if(checkNextToken(",")){
                 incrementProgramCount(1);
                 parseValueList();
             }
-        } else logError("Expecting string literal, boolean, integer or null");
+        } else logError("Expecting string literal, boolean, integer, float or null");
     }
 
     public boolean parseValue(){
-        if(parseStringLiteral()) return true;
-        if(parseBooleanLiteral()) return true;
-        if(parseFloatOrInteger()) return true;
-        return parseNull();
+        if(parseStringLiteral()) {
+            command.createValueList(getCurrentToken().getValue());
+            return true;
+        }
+        if(parseBooleanLiteral()) {
+            command.createValueList(getCurrentToken().getValue());
+            return true;
+        }
+        if(parseFloatOrInteger()) {
+            saveDigitString();
+            return true;
+        }
+        if(parseNull()){
+            command.createValueList(getCurrentToken().getValue());
+            return true;
+        }
+        return false;
     }
 
     public boolean parseNull(){
@@ -339,32 +353,46 @@ public class Parser {
 
     public boolean parseFloatOrInteger(){
         switch (getCurrentToken().getValue()) {
-            case "-", "+" -> getNextToken();
-        }
-        return parseFloat() || parseInteger();
-    }
-
-    public boolean parseFloat(){
-        if(parseDigitSequence()){
-            if(checkNextToken(".")){
+            case "-", "+" -> {
+                buildDigitString(getCurrentToken().getValue());
                 getNextToken();
-                getNextToken();
-                return parseDigitSequence();
             }
-        }
-        return false;
-    }
 
-    public boolean parseInteger(){
+        }
         return parseDigitSequence();
     }
 
     public boolean parseDigitSequence(){
-        if(!tokenType(getCurrentToken(), INTEGER)) return false;
-        while(checkNextToken(INTEGER)){
-            getNextToken();
+        if(isInteger()){
+            incrementDigitSequence();
+            if(checkNextToken(".")){
+                incrementProgramCount(2);
+                buildDigitString(".");
+                incrementDigitSequence();
+            }
+            return true;
         }
-        return true;
+        return false;
+    }
+
+    public boolean isInteger(){
+        return tokenType(getCurrentToken(), INTEGER);
+    }
+
+    public void incrementDigitSequence(){
+        buildDigitString(getCurrentToken().getValue());
+        if(!checkNextToken(INTEGER)) return;
+        incrementProgramCount(1);
+        incrementDigitSequence();
+    }
+
+    public void buildDigitString(String value){
+        digitString = digitString.concat(value);
+    }
+
+    public void saveDigitString(){
+        command.createValueList(digitString);
+        digitString = "";
     }
 
     public void parseSelectQuery() {

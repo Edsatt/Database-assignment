@@ -21,6 +21,7 @@ public class InsertCommand extends DBCommand{
     }
 
     public void interpretCommand() {
+        System.out.println(values);
         try{
             server.checkInDatabase();
         } catch(IOException e){
@@ -53,9 +54,6 @@ public class InsertCommand extends DBCommand{
     }
 
     public void createValueList(String value) {
-        if(value.startsWith("'") && value.endsWith("'")){
-            value = value.replaceAll("'", "");
-        }
         value = value.toLowerCase();
         this.values.add(value);
     }

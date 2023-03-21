@@ -98,6 +98,7 @@ public class ParserTests {
         setup("insert into name values (1 2 3);");
         assertTrue(parser.isParseSuccess());
         setup("insert into name values (123);");
+        setup("insert into name values (123);");
         assertTrue(parser.isParseSuccess());
         setup("insert into name values (NULL, true, false, 1 2 3, 1.1 2, 123);");
         assertTrue(parser.isParseSuccess());
