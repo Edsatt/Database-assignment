@@ -23,6 +23,8 @@ public class DBServer {
     private Table table;
     static String output;
 
+    private FileParser fileParser;
+
     public static void main(String args[]) throws IOException {
         DBServer server = new DBServer();
         server.blockingListenOn(8888);
@@ -131,6 +133,16 @@ public class DBServer {
 
     public Table getTable(){
         return table;
+    }
+
+    //for testing
+    public String getOutput() {
+        return output;
+    }
+
+    public Table importTable(String filePath){
+        fileParser = new FileParser();
+        return fileParser.fileReader(filePath);
     }
 
     //  === Methods below handle networking aspects of the project - you will not need to change these ! ===

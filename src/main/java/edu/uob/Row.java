@@ -21,7 +21,7 @@ public class Row {
 
     public boolean contains(String value){
         for (String s : values) {
-            if (Objects.equals(s, value)) {
+            if (s.equalsIgnoreCase(value)){
                 return true;
             }
         }
@@ -40,14 +40,13 @@ public class Row {
         return values.size();
     }
 
-    //finds the column index for a given value. This can be used to get the column name
-    public int getColumnIndex(String value){
+    public int getColumnIndex(String query){
         for(int i=0; i<values.size(); i++){
-            if(Objects.equals(values.get(i), value)){
+            if(values.get(i).equalsIgnoreCase(query)){
                 return i;
             }
         }
-        return values.size();
+        return -1;
     }
 
     public void addValue(int index, String value){

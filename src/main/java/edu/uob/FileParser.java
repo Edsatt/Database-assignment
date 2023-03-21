@@ -5,18 +5,17 @@ import org.jetbrains.annotations.NotNull;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Objects;
 
 public class FileParser {
     private Table table;
     private String tableName;
-    private ArrayList<Row> rows;
+    private final ArrayList<Row> rows;
 
     public FileParser(){
         this.rows = new ArrayList<>();
     }
 
-    public void fileReader(String filePath) {
+    public Table fileReader(String filePath) {
         File fileToOpen = new File(filePath);
         try{
             FileReader reader = new FileReader(fileToOpen);
@@ -30,8 +29,7 @@ public class FileParser {
             System.out.println("Cannot open file");
         }
         setTableName(fileToOpen);
-        createTable();
-        saveTable();
+        return createTable();
     }
 
     public void lineToRow(@NotNull String fileLine){
@@ -45,7 +43,7 @@ public class FileParser {
         tableName = file.getName().replace(".tab","");
     }
 
-    public void createTable(){
+    public Table createTable(){
         for(int i=0; i<rows.size(); i++){
             if(i==0){
                 this.table = new Table(tableName, rows.get(i).getValues());
@@ -54,15 +52,7 @@ public class FileParser {
                 table.addRow(("row" +i), rows.get(i));
             }
         }
-    }
-
-    public void saveTable(){
-        if(Objects.equals(table.getColumnName(1), "id")){
-            table.removeColumn("id");
-        }
-        Database database = new Database("file_databases");
-        database.addTable(tableName, table);
-        DBServer.databases.addDatabase("file_databases", database);
+        return table;
     }
 
 }

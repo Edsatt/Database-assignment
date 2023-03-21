@@ -1,5 +1,6 @@
 package edu.uob;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,12 +11,14 @@ public abstract class DBCommand {
     DatabaseList databases;
     Database database;
     Table table;
-
-    List<String> columnNames;
+    List<String> tempList;
+    List<String> attributeNames;
+    List<String> values;
+    String attributeName;
+    String commandType;
     ArrayList<Row> rows;
     Row row;
     String id;
-
     String filePath;
     final String newLine = System.lineSeparator();
 
@@ -25,5 +28,11 @@ public abstract class DBCommand {
 
     public void setId(String id){}
 
-    public void createList(String columnName){}
+    public void createAttributeList(String attributeName){}
+
+    public void createValueList(String value){}
+
+    public void checkList() throws IOException {}
+
+    public void setCommandType(String commandType){}
 }

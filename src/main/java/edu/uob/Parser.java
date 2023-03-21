@@ -13,8 +13,8 @@ public class Parser {
     private boolean withinBraces;
     private int openBracketCnt;
     private int closedBracketCnt;
-
     public String outputString;
+    private String attributeName;
     DBCommand command;
 
     public Parser(ArrayList<Token> tokens){
@@ -23,6 +23,7 @@ public class Parser {
         this.parseSuccess = true;
         this.withinBraces = false;
         this.outputString = "";
+        this.attributeName = "";
         //System.out.println("Parse success = " +parseSuccess);
     }
 
@@ -189,7 +190,7 @@ public class Parser {
     private void parseAttributeList() {
         incrementProgramCount(1);
         if(parseAttributeName()){
-            command.createList(getCurrentToken().getValue());
+            saveAttributeName();
             if(checkNextToken(",")){
                 incrementProgramCount(1);
                 parseAttributeList();
@@ -199,13 +200,26 @@ public class Parser {
 
     private boolean parseAttributeName(){
         if(parsePlainText()){
+            storeAttributeName(getCurrentToken().getValue());
             if(checkNextToken(".")){
                 incrementProgramCount(2);
-                if(parsePlainText()) return true;
+                if(parsePlainText()) {
+                    storeAttributeName("."+getCurrentToken().getValue());
+                    return true;
+                }
             }
             return true;
         }
         return false;
+    }
+
+    public void storeAttributeName(String string){
+        attributeName = attributeName.concat(string);
+    }
+
+    public void saveAttributeName(){
+        command.createAttributeList(attributeName);
+        attributeName = "";
     }
 
     private boolean parsePlainText(){
@@ -232,31 +246,26 @@ public class Parser {
     }
 
     public void interpretDropQuery(String tokenValue){
+        command = new DropCommand();
         switch(tokenValue){
-            case "DATABASE" -> buildDropDBCommand();
-            case "TABLE" -> buildDropTableCommand();
+            case "DATABASE" -> command.setCommandType("DATABASE");
+            case "TABLE" -> command.setCommandType("TABLE");
         }
     }
 
-    public void buildDropDBCommand(){
-        command = new DropDBCommand();
-    }
-
-    private void buildDropTableCommand() {
-        command = new DropTableCommand();
-    }
-
-//    public void buildCreateTableCommand(){
-//        command = new CreateTableCommand();
-//    }
-
     public void parseAlterQuery(){
         if(tokenValue(getNextToken(), "TABLE")){
-            if(tokenValue(getNextToken(), "NAME")){
-                switch (getNextToken().getValue().toUpperCase()){
+            incrementProgramCount(1);
+            if(parsePlainText()){
+                String tableID = getCurrentToken().getValue();
+                String tokenValue = getNextToken().getValue().toUpperCase();
+                switch (tokenValue){
                     case "ADD", "DROP" -> {
+                        interpretAlterQuery(tokenValue);
+                        command.setId(tableID);
                         incrementProgramCount(1);
                         parseAttributeName();
+                        saveAttributeName();
                         return;
                     }
                 }
@@ -265,10 +274,20 @@ public class Parser {
         logError("Error with ALTER command syntax");
     }
 
+    public void interpretAlterQuery(String tokenValue){
+        command = new AlterCommand();
+        switch(tokenValue){
+            case "ADD" -> command.setCommandType("ADD");
+            case "DROP" -> command.setCommandType("DROP");
+        }
+    }
+
     public void parseInsertQuery(){
+        buildInsertCommand();
         if(tokenValue(getNextToken(), "INTO")) {
             incrementProgramCount(1);
             if (parsePlainText()){
+                command.setId(getCurrentToken().getValue());
                 if (tokenValue(getNextToken(), "VALUES")) {
                     if(checkNextToken("(")){
                         incrementProgramCount(1);
@@ -284,14 +303,19 @@ public class Parser {
         logError("Error with INSERT query syntax");
     }
 
+    public void buildInsertCommand(){
+        command = new InsertCommand();
+    }
+
     public void parseValueList(){
         incrementProgramCount(1);
         if(parseValue()){
+            command.createValueList(getCurrentToken().getValue());
             if(checkNextToken(",")){
                 incrementProgramCount(1);
                 parseValueList();
             }
-        } else logError("Expecting value or list of values");
+        } else logError("Expecting string literal, boolean, integer or null");
     }
 
     public boolean parseValue(){

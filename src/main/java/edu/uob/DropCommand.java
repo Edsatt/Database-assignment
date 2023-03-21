@@ -5,9 +5,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class DropDBCommand extends DBCommand{
+public class DropCommand extends DBCommand{
 
-    public DropDBCommand(){
+    public DropCommand(){
         this.databases = DBServer.databases;
     }
 
@@ -19,20 +19,34 @@ public class DropDBCommand extends DBCommand{
         this.id = dbName;
     }
 
+    public void setCommandType(String commandType){
+        this.commandType = commandType;
+    }
+
     public void interpretCommand() {
-        filePath = server.getStorageFolderPath().concat(File.separator +id.toLowerCase());
+        switch(commandType){
+            case "DATABASE" -> filePath = server.getStorageFolderPath().concat(File.separator +id.toLowerCase());
+            case "TABLE" -> filePath = server.getCurrentFolderPath().concat(File.separator +id.toLowerCase()+".tab");
+        }
         try{
             server.fileExists(filePath,true);
         } catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"Table "+id+" not found");
+            DBServer.output = ("[ERROR]"+newLine+" "+commandType+id+" not found");
+            return;
         }
-        deleteDirContents(filePath);
+        switch(commandType){
+            case "DATABASE" -> {
+                deleteDirContents(filePath);
+                server.removeDatabase(id);
+            }
+            case "TABLE" -> server.getDatabase().removeTable(id);
+        }
         try {
             Files.delete(Paths.get(filePath));
         } catch(IOException ioe) {
             DBServer.output = ("[ERROR]"+newLine+"Cannot delete folder");
         }
-        server.removeDatabase(id);
+
     }
 
     public void deleteDirContents(String filePath){

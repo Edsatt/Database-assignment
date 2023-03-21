@@ -18,13 +18,12 @@ public class DatabaseList {
         databases.put(name, database);
     }
 
-    public void searchDatabase(String name) throws DatabaseNotFoundException{
+    public void searchDatabases(String name){
         for(String dbName: databases.keySet()){
             if(Objects.equals(dbName, name)){
                 return;
             }
         }
-        throw new DatabaseNotFoundException("Database with name " +name +" not found");
     }
 
     public Database getDatabase(String name){

@@ -13,7 +13,8 @@ public class CreateTableCommand extends DBCommand{
 
     public CreateTableCommand(){
         this.databases = DBServer.databases;
-        this.columnNames = new ArrayList<>();
+        this.tempList = new ArrayList<>();
+        this.attributeNames = new ArrayList<>();
         hasList = false;
     }
 
@@ -23,14 +24,6 @@ public class CreateTableCommand extends DBCommand{
 
     public void setId(String dbName){
         this.id = dbName;
-    }
-
-    public void setHasList(boolean hasList) {
-        this.hasList = hasList;
-    }
-
-    public boolean HasList() {
-        return hasList;
     }
 
     public void interpretCommand() {
@@ -53,22 +46,51 @@ public class CreateTableCommand extends DBCommand{
             DBServer.output = ("[ERROR]"+newLine+"Cannot create Table");
             return;
         }if(hasList){
+            try{
+                checkList();
+            }catch(IOException e){
+                DBServer.output = ("[ERROR]"+newLine+"Table referenced by attribute list does not match selected table");
+                return;
+            }
             createTable();
             saveTable();
         }
-
     }
 
-    public void createList(String columnName){
-        System.out.println(columnName);
+    public void createAttributeList(String attributeName){
         hasList = true;
-        this.columnNames.add(columnName);
+        this.tempList.add(attributeName);
+    }
+
+    public void checkList() throws IOException{
+        String [] splitSting;
+        String tableName;
+        String attribute;
+        for(String attributeName: tempList){
+            if(attributeName.contains(".")){
+                splitSting = attributeName.split("\\.");
+                tableName = splitSting[0];
+                attribute = splitSting[1];
+                if(!tableNameCheck(tableName)){
+                    throw new IOException("Table name doesn't match current table");
+                }
+                attributeNames.add(attribute);
+            }else attributeNames.add(attributeName);
+        }
+    }
+
+    public boolean tableNameCheck(String tableName){
+        return Objects.equals(tableName, id);
     }
 
     public void createTable(){
-        table = new Table(id, columnNames);
+        table = new Table(id, attributeNames);
         if(Objects.equals(table.getColumnName(1), "id")){
-            table.removeColumn("id");
+            try {
+                table.removeColumn("id");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
         server.getDatabase().addTable(id, table);
     }

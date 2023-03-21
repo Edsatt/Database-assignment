@@ -53,4 +53,12 @@ public class Database {
             getTable(tableName).printTable(tableName);
         }
     }
+
+    public boolean searchDatabase(String name){
+        for(String tableName: tables.keySet()){
+            if(Objects.equals(tableName, name)){
+                return true;
+            }
+        } return false;
+    }
 }

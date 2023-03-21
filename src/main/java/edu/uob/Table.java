@@ -1,7 +1,6 @@
 package edu.uob;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
@@ -22,15 +21,21 @@ public class Table {
         this.keys = new LinkedHashMap<>();
         this.tableName = tableName;
         Row columnNames = new Row("columnNames", values);
-        columnNames.addValue(0,"id");
+        idCheck(columnNames);
         addRow("columnNames", columnNames);
+    }
+
+    public void idCheck(Row columnNames){
+        if(!Objects.equals(columnNames.getValueByColumn(0),"id")){
+            columnNames.addValue(0,"id");
+        }
     }
 
     public void addId(Table table){
         int i=0;
         for(Row row: table.getRows().values()){
             if(!Objects.equals(row.getRowName(), "columnNames")){
-                row.addValue(0,""+i);
+                row.setValue(0,""+i);
             }
             i++;
         }
@@ -52,6 +57,11 @@ public class Table {
         return getRow("columnNames").getColumnIndex(columnName);
     }
 
+    public boolean searchColumns(String query){
+        Row columnNames = getRow("columnNames");
+        return columnNames.contains(query);
+    }
+
     public Key getKey(String colName){
         return keys.get(colName);
     }
@@ -64,12 +74,12 @@ public class Table {
         rows.put(rowName, row);
     }
 
-    //inserts column and shifts index of other columns by 1
+
     public void addColumn(int columnIndex, String columnName){
         getRow("columnNames").addValue(columnIndex, columnName);
     }
 
-    //replace a column
+
     public void setColumn(int columnIndex, String columnName){
         getRow("columnNames").setValue(columnIndex, columnName);
     }
@@ -78,7 +88,7 @@ public class Table {
         this.tableName = tableName;
     }
 
-    //add multiple columns
+
     public void addColumnList(List<String> columnNames){
         getRow("columnNames").addValueList(columnNames);
     }
@@ -91,8 +101,9 @@ public class Table {
         rows.remove(rowName);
     }
 
-    public void removeColumn(String columnName){
-        int index = getRow("columnNames").getColumnIndex(columnName); //gets index for specified column name
+    public void removeColumn(String columnName)throws IOException{
+        int index = getRow("columnNames").getColumnIndex(columnName);
+        if(index<0) throw new IOException("Column not found");
         for (Row row: rows.values()){
             row.removeValue(row.getValueByColumn(index));
         }
