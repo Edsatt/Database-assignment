@@ -9,13 +9,11 @@ import java.util.Objects;
 
 public class CreateTableCommand extends DBCommand{
 
-    private boolean hasList;
-
     public CreateTableCommand(){
         this.databases = DBServer.databases;
         this.tempList = new ArrayList<>();
         this.attributeNames = new ArrayList<>();
-        hasList = false;
+        this.hasList = false;
     }
 
     public void setServer(DBServer server) {
@@ -34,6 +32,7 @@ public class CreateTableCommand extends DBCommand{
             return;
         }
         this.filePath = server.getCurrentFolderPath().concat(File.separator +id.toLowerCase()+".tab");
+        this.idFilePath = server.getCurrentFolderPath().concat(File.separator+id.toLowerCase()+"_id.txt");
         try{
             server.fileExists(filePath,false);
         } catch(IOException e){
@@ -45,12 +44,19 @@ public class CreateTableCommand extends DBCommand{
         }catch(IOException e){
             DBServer.output = ("[ERROR]"+newLine+"Cannot create Table");
             return;
-        }if(hasList){
+        }
+        createIDFIle();
+        if(hasList){
             try{
                 checkList();
             }catch(IOException e){
                 DBServer.output = ("[ERROR]"+newLine+"Table referenced by attribute list does not match selected table");
                 return;
+            }
+            try{
+                idCheck();
+            }catch(IOException e){
+                DBServer.output = ("[ERROR]"+newLine+"id is not a valid column name");
             }
             createTable();
             saveTable();
@@ -79,19 +85,29 @@ public class CreateTableCommand extends DBCommand{
         }
     }
 
+    public void idCheck ()throws IOException{
+        for(String columnName: attributeNames){
+            if(columnName.equalsIgnoreCase("id")) {
+                throw new IOException("Cannot name column ID");
+            }
+        }
+        attributeNames.add(0, "id");
+    }
+
     public boolean tableNameCheck(String tableName){
         return Objects.equals(tableName, id);
     }
 
+    public void createIDFIle(){
+        try {
+            Files.createFile(Paths.get(idFilePath));
+        } catch (IOException e) {
+            DBServer.output = ("[ERROR]"+newLine+"Cannot create id file");
+        }
+    }
+
     public void createTable(){
         table = new Table(id, attributeNames);
-        if(Objects.equals(table.getColumnName(1), "id")){
-            try {
-                table.removeColumn("id");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
         server.getDatabase().addTable(id, table);
     }
 

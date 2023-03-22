@@ -3,42 +3,24 @@ package edu.uob;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
 
 //Table class contains a hashmap for its rows and keys
 public class Table {
     private LinkedHashMap<String, Row> rows;
     private LinkedHashMap<String, Key> keys;
-
     private String tableName;
-    //add method to check table has id column, and if not add it in
 
     public Table(String tableName, List<String> values){
         this.rows = new LinkedHashMap<>();
         this.keys = new LinkedHashMap<>();
         this.tableName = tableName;
         Row columnNames = new Row("columnNames", values);
-        idCheck(columnNames);
         addRow("columnNames", columnNames);
-    }
-
-    public void idCheck(Row columnNames){
-        if(!Objects.equals(columnNames.getValueByColumn(0),"id")){
-            columnNames.addValue(0,"id");
-        }
-    }
-
-    public void addId(Table table){
-        int i=0;
-        for(Row row: table.getRows().values()){
-            if(!Objects.equals(row.getRowName(), "columnNames")){
-                row.setValue(0,""+i);
-            }
-            i++;
-        }
     }
 
     public HashMap<String, Row> getRows() {
@@ -55,6 +37,10 @@ public class Table {
 
     public int getColumnIndex(String columnName){
         return getRow("columnNames").getColumnIndex(columnName);
+    }
+
+    public Row getColumns(){
+        return getRow("columnNames");
     }
 
     public boolean searchColumns(String query){
@@ -74,11 +60,9 @@ public class Table {
         rows.put(rowName, row);
     }
 
-
     public void addColumn(int columnIndex, String columnName){
         getRow("columnNames").addValue(columnIndex, columnName);
     }
-
 
     public void setColumn(int columnIndex, String columnName){
         getRow("columnNames").setValue(columnIndex, columnName);
@@ -87,7 +71,6 @@ public class Table {
     public void setTableName(String tableName) {
         this.tableName = tableName;
     }
-
 
     public void addColumnList(List<String> columnNames){
         getRow("columnNames").addValueList(columnNames);
@@ -99,6 +82,15 @@ public class Table {
 
     public void removeRow(String rowName){
         rows.remove(rowName);
+    }
+
+    public Row modifyRow(Row row, ArrayList<Integer> indexes){
+        ArrayList<String> rowString = new ArrayList<>();
+        for(int index: indexes){
+            String value = row.getValueByColumn(index);
+            rowString.add(value);
+        }
+        return new Row("temp", rowString);
     }
 
     public void removeColumn(String columnName)throws IOException{
@@ -147,5 +139,78 @@ public class Table {
         for(String name: rows.keySet()){
             System.out.println(name);
         }
+    }
+
+    public Table modifyTable(Table input, String attributeName, String value, String comparator){
+        int columnIndex = input.getColumnIndex(attributeName);
+        Table output = makeOutputTable(input);
+        for(String rowName: input.rows.keySet()){
+            if(!rowName.equalsIgnoreCase("columnNames")){
+                Row row = input.getRow(rowName);
+                switch(comparator){
+                    case "like" -> {
+                        if(compareLike(row, columnIndex, value)){
+                            output.addRow(rowName, row);
+                        }
+                    }
+                    case "==" -> {
+                        if(compareEquals(row, columnIndex, value)){
+                            output.addRow(rowName, row);
+                        }
+                    }
+                    case "!=" -> {
+                        if(!compareEquals(row, columnIndex, value)){
+                            output.addRow(rowName, row);
+                        }
+                    }
+                    case ">" -> {
+                        if(compareGreaterThan(row, columnIndex, value)){
+                            output.addRow(rowName, row);
+                        }
+                    }
+                    case "<" -> {
+                        if(compareLessThan(row, columnIndex, value)){
+                            output.addRow(rowName, row);
+                        }
+                    }
+                    case ">=" -> {
+                        if(!compareLessThan(row, columnIndex, value)){
+                            output.addRow(rowName, row);
+                        }
+                    }
+                    case "<=" -> {
+                        if(!compareGreaterThan(row, columnIndex, value)){
+                            output.addRow(rowName, row);
+                        }
+                    }
+                }
+            }
+        }
+        return output;
+    }
+
+    public Table makeOutputTable(Table input){
+        return new Table("output", input.getColumns().getValues());
+    }
+
+    private boolean compareLike(Row row, int index, String value) {
+        value = value.replace("'", "");
+        return row.getValueByColumn(index).contains(value);
+    }
+
+    public boolean compareEquals(Row row, int index, String value){
+        return row.getValueByColumn(index).equalsIgnoreCase(value);
+    }
+
+    public boolean compareGreaterThan(Row row, int index, String value){
+        double rowVal = Double.parseDouble(row.getValueByColumn(index));
+        double queryVal = Double.parseDouble(value);
+        return rowVal>queryVal;
+    }
+
+    public boolean compareLessThan(Row row, int index, String value){
+        double rowVal = Double.parseDouble(row.getValueByColumn(index));
+        double queryVal = Double.parseDouble(value);
+        return rowVal<queryVal;
     }
 }

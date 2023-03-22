@@ -17,6 +17,7 @@ public class Parser {
     private String attributeName;
     DBCommand command;
     private String digitString;
+    private  ArrayList<String> condition;
 
     public Parser(ArrayList<Token> tokens){
         this.tokens = tokens;
@@ -26,7 +27,7 @@ public class Parser {
         this.outputString = "";
         this.attributeName = "";
         this.digitString = "";
-
+        this.condition = new ArrayList<>();
     }
 
     public void outputParseResult(){
@@ -35,8 +36,7 @@ public class Parser {
     }
 
     public void logError(String message){
-        if(outputString.isEmpty()) outputString = outputString.concat(message);
-        else outputString = outputString.concat(System.lineSeparator() +message);
+        if(outputString.isEmpty()) outputString = message;
         setParseSuccess(false);
     }
 
@@ -59,8 +59,6 @@ public class Parser {
     public Token getCurrentToken(){
         return tokens.get(programCount);
     }
-
-    // append error message string to parse fail attribute. After parsing, check string. If null, throw exception with error message.
 
     public boolean checkNextToken(Object query) {
         if (programCount < tokens.size() - 1) {
@@ -396,9 +394,11 @@ public class Parser {
     }
 
     public void parseSelectQuery() {
+        buildSelectCommand();
         parseWildAttribList();
         if (tokenValue(getNextToken(), "FROM")) {
             if (tokenType(getNextToken(), PLAIN_TEXT)) {
+                command.setId(getCurrentToken().getValue());
                 if (checkNextToken("WHERE")) {
                     incrementProgramCount(1);
                     initialiseBrackets();
@@ -412,8 +412,17 @@ public class Parser {
         }
         logError("Error with SELECT query syntax");
     }
+
+    public void buildSelectCommand(){
+        command = new SelectCommand();
+    }
+
     public void parseWildAttribList(){
-        if(!tokenType(getCurrentToken(), WILD)) parseAttributeList();
+        if(checkNextToken(WILD)) {
+            incrementProgramCount(1);
+            command.setCommandType("WILD");
+        }
+        else parseAttributeList();
     }
 
     public void conditionBraceCheck(){
@@ -425,8 +434,10 @@ public class Parser {
             setWithinBraces(true);
             addOpenBracketCnt();
             incrementProgramCount(1);
+            command.addCondition(getCurrentToken().getValue());
             while(checkNextToken("(")) {
                 incrementProgramCount(1);
+                command.addCondition(getCurrentToken().getValue());
                 addOpenBracketCnt();
             }
             parseCondition();
@@ -446,6 +457,7 @@ public class Parser {
 
     public void checkClosingBrace(){
         if(tokenValue(getCurrentToken(), ")")) {
+            command.addCondition(getCurrentToken().getValue());
             incrementProgramCount(1);
             addClosedBracketCnt();
             checkClosingBrace();
@@ -456,6 +468,7 @@ public class Parser {
     public boolean parseBoolOp(){
         switch(getCurrentToken().getValue().toUpperCase()){
             case "AND", "OR" -> {
+                command.addCondition(getCurrentToken().getValue());
                 return true;
             }
         }
@@ -463,12 +476,29 @@ public class Parser {
     }
 
     public boolean parseConditionComparator(){
+        saveCondition(programCount);
         parseAttributeName();
         if(tokenType(getNextToken(),COMPARATOR)) {
             incrementProgramCount(1);
             return parseValue();
         }
         return false;
+    }
+
+    public void saveCondition(int pc){
+        for(int i=0; i<3; i++){
+            makeConditionList(tokens.get(pc+i).getValue());
+        }
+        saveConditionList();
+    }
+
+    public void makeConditionList(String value){
+        condition.add(value);
+    }
+
+    public void saveConditionList(){
+        command.createConditionList(condition);
+        condition = new ArrayList<>();
     }
 
     public void parseUpdateQuery(){

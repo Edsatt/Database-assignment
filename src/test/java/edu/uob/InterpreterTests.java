@@ -63,5 +63,25 @@ public class InterpreterTests {
         setup("drop database test");
     }
 
+    @Test
+    public void selectTests(){
+        setup("create database test;");
+        setup("use test");
+        setup("create table test1(name, age);");
+        setup("insert into test1 values('Ed', 25);");
+        setup("insert into test1 values('Peter', 23);");
+        setup("insert into test1 values('Isobel', 24);");
+        setup("select age,name from test1 where age == 25 and name like 'el';");
+//        setup("select name from test1 where name != 'isobel';");
+//        setup("select name from test1 where age > 24;");
+//        setup("select name from test1 where age <= 24;");
+//        setup("select name from test1 where age < 25;");
+//        setup("select name from test1 where age >= 24;");
+//        setup("select age from test1 where name like 'e';");
+        System.out.println(testServer.getOutput());
+        setup("drop database test");
+
+    }
+
 
 }

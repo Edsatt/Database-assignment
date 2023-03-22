@@ -23,7 +23,6 @@ public class Database {
     }
 
     public void addTable(String tableName, Table table){
-        table.addId(table);
         tables.put(tableName, table);
     }
 

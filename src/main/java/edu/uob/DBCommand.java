@@ -11,15 +11,19 @@ public abstract class DBCommand {
     DatabaseList databases;
     Database database;
     Table table;
+    List<Integer> idList;
     List<String> tempList;
+    Boolean hasList;
     List<String> attributeNames;
     List<String> values;
+    ArrayList<ArrayList<String>> conditions;
     String attributeName;
     String commandType;
     ArrayList<Row> rows;
     Row row;
     String id;
     String filePath;
+    String idFilePath;
     final String newLine = System.lineSeparator();
 
     public void interpretCommand(){}
@@ -31,6 +35,10 @@ public abstract class DBCommand {
     public void createAttributeList(String attributeName){}
 
     public void createValueList(String value){}
+
+    public void addCondition(String value){}
+
+    public void createConditionList(ArrayList<String> value){}
 
     public void checkList() throws IOException {}
 

@@ -26,22 +26,28 @@ public class DropCommand extends DBCommand{
     public void interpretCommand() {
         switch(commandType){
             case "DATABASE" -> filePath = server.getStorageFolderPath().concat(File.separator +id.toLowerCase());
-            case "TABLE" -> filePath = server.getCurrentFolderPath().concat(File.separator +id.toLowerCase()+".tab");
+            case "TABLE" -> {
+                filePath = server.getCurrentFolderPath().concat(File.separator +id.toLowerCase()+".tab");
+                idFilePath = server.getCurrentFolderPath().concat(File.separator +id.toLowerCase()+"_id.txt");
+            }
         }
         try{
             server.fileExists(filePath,true);
         } catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+" "+commandType+id+" not found");
+            DBServer.output = ("[ERROR]"+newLine+" "+commandType+" "+id+" not found");
             return;
         }
-        switch(commandType){
-            case "DATABASE" -> {
-                deleteDirContents(filePath);
-                server.removeDatabase(id);
+        try{
+            switch(commandType){
+                case "DATABASE" -> {
+                    deleteDirContents(filePath);
+                    server.removeDatabase(id);
+                }
+                case "TABLE" -> {
+                    server.getDatabase().removeTable(id);
+                    Files.delete(Paths.get(idFilePath));
+                }
             }
-            case "TABLE" -> server.getDatabase().removeTable(id);
-        }
-        try {
             Files.delete(Paths.get(filePath));
         } catch(IOException ioe) {
             DBServer.output = ("[ERROR]"+newLine+"Cannot delete folder");

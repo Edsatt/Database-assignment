@@ -1,7 +1,6 @@
 package edu.uob;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 
 public class InsertCommand extends DBCommand{
@@ -10,6 +9,7 @@ public class InsertCommand extends DBCommand{
     public InsertCommand(){
         this.databases = DBServer.databases;
         this.values = new ArrayList<>();
+        this.idList = new ArrayList<>();
     }
 
     public void setServer(DBServer server) {
@@ -21,7 +21,6 @@ public class InsertCommand extends DBCommand{
     }
 
     public void interpretCommand() {
-        System.out.println(values);
         try{
             server.checkInDatabase();
         } catch(IOException e){
@@ -29,6 +28,7 @@ public class InsertCommand extends DBCommand{
             return;
         }
         this.filePath = server.getCurrentFolderPath().concat(File.separator +id.toLowerCase()+".tab");
+        this.idFilePath = server.getCurrentFolderPath().concat(File.separator+id.toLowerCase()+"_id.txt");
         try{
             server.fileExists(filePath,true);
         } catch(IOException e){
@@ -36,7 +36,6 @@ public class InsertCommand extends DBCommand{
             return;
         }
         getTable();
-
         try{
             tableCheck();
         }catch(IOException e){
@@ -49,8 +48,10 @@ public class InsertCommand extends DBCommand{
             DBServer.output = ("[ERROR]"+newLine+"Expecting " +tableSize+" values");
             return;
         }
+        getIdFile();
         addRow();
         saveTable();
+        saveIdFile();
     }
 
     public void createValueList(String value) {
@@ -75,13 +76,51 @@ public class InsertCommand extends DBCommand{
 
     public void addRow(){
         String rowName = "row "+table.getNumRows();
-        values.add(0,"NULL");
+        values.add(0, ""+createNewId());
         row = new Row(rowName,values);
         table.addRow(rowName,row);
-        table.addId(table);
     }
 
     public void saveTable(){
         table.outputTable(filePath);
+    }
+
+    public void getIdFile(){
+        File fileToOpen = new File(idFilePath);
+        try{
+            FileReader reader = new FileReader(fileToOpen);
+            BufferedReader buffReader = new BufferedReader(reader);
+            String id;
+            while((id = buffReader.readLine()) != null){
+                importIds(id);
+            }
+            buffReader.close();
+        } catch(IOException ioe){
+            System.out.println("Cannot open file");
+        }
+    }
+
+    public void importIds(String id){
+        idList.add(Integer.parseInt(id));
+    }
+
+
+    public int createNewId(){
+        int id = idList.size();
+        idList.add(id);
+        return id;
+    }
+
+    public void saveIdFile(){
+        try {
+            PrintWriter writer = new PrintWriter(new FileWriter(idFilePath));
+            for (int id: idList) {
+                writer.write(Integer.toString(id));
+                writer.println();
+            }
+            writer.close();
+        } catch(IOException ioe) {
+            System.out.println("Can't write to id file");
+        }
     }
 }
