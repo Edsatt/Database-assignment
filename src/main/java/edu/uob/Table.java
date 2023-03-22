@@ -31,6 +31,15 @@ public class Table {
         return rows.get(rowName);
     }
 
+    public Row getRowByID(char id){
+        for(Row row: rows.values()){
+            if(row.getId(row) == id){
+                return row;
+            }
+        }
+        return null;
+    }
+
     public String getColumnName(int columnIndex){
         return getRow("columnNames").getValueByColumn(columnIndex);
     }
@@ -113,7 +122,6 @@ public class Table {
         return getRow("columnNames").getNumValues();
     }
 
-    //need to write an exception for this method in case table doesn't exist
     public void outputTable(String filePath){
         try {
             BufferedWriter buffWriter = new BufferedWriter(new FileWriter(filePath));
@@ -128,11 +136,13 @@ public class Table {
         }
     }
 
-    public void printTable(String tableName){
+    public String printTable(){
+        String tableString ="";
         for (Row row : rows.values()) {
             String rowString = String.join("\t", row.getValues());
-            System.out.println(rowString);
+            tableString = tableString.concat(rowString +System.lineSeparator());
         }
+        return tableString;
     }
 
     public void printTableKeys(){
@@ -141,56 +151,52 @@ public class Table {
         }
     }
 
-    public Table modifyTable(Table input, String attributeName, String value, String comparator){
+    public String modifyTable(Table input, String attributeName, String value, String comparator){
         int columnIndex = input.getColumnIndex(attributeName);
-        Table output = makeOutputTable(input);
+        ArrayList<Character> output = new ArrayList<>();
         for(String rowName: input.rows.keySet()){
             if(!rowName.equalsIgnoreCase("columnNames")){
                 Row row = input.getRow(rowName);
                 switch(comparator){
                     case "like" -> {
                         if(compareLike(row, columnIndex, value)){
-                            output.addRow(rowName, row);
+                            output.add(row.getId(row));
                         }
                     }
                     case "==" -> {
                         if(compareEquals(row, columnIndex, value)){
-                            output.addRow(rowName, row);
+                            output.add(row.getId(row));
                         }
                     }
                     case "!=" -> {
                         if(!compareEquals(row, columnIndex, value)){
-                            output.addRow(rowName, row);
+                            output.add(row.getId(row));
                         }
                     }
                     case ">" -> {
                         if(compareGreaterThan(row, columnIndex, value)){
-                            output.addRow(rowName, row);
+                            output.add(row.getId(row));
                         }
                     }
                     case "<" -> {
                         if(compareLessThan(row, columnIndex, value)){
-                            output.addRow(rowName, row);
+                            output.add(row.getId(row));
                         }
                     }
                     case ">=" -> {
                         if(!compareLessThan(row, columnIndex, value)){
-                            output.addRow(rowName, row);
+                            output.add(row.getId(row));
                         }
                     }
                     case "<=" -> {
                         if(!compareGreaterThan(row, columnIndex, value)){
-                            output.addRow(rowName, row);
+                            output.add(row.getId(row));
                         }
                     }
                 }
             }
         }
-        return output;
-    }
-
-    public Table makeOutputTable(Table input){
-        return new Table("output", input.getColumns().getValues());
+        return output.toString();
     }
 
     private boolean compareLike(Row row, int index, String value) {

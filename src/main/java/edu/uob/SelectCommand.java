@@ -4,11 +4,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Stack;
 
 public class SelectCommand extends DBCommand{
 
     String attribute, comparator, value;
-    Table tempTable;
+    ArrayList<String> conditionList;
+    ArrayList<Character> tableIDs;
+    Stack<String> idStack;
 
     public SelectCommand(){
         this.databases = DBServer.databases;
@@ -18,6 +21,9 @@ public class SelectCommand extends DBCommand{
         this.values = new ArrayList<>();
         this.hasList = false;
         this.attribute = this.comparator = this.value = "";
+        this.conditionList = new ArrayList<>();
+        this.tableIDs = new ArrayList<>();
+        this.idStack = new Stack<>();
     }
 
     public void setServer(DBServer server) {
@@ -62,10 +68,13 @@ public class SelectCommand extends DBCommand{
             }
         }
         if(!checkAttributes()) return;
+        getAllTableIDs();
         condition();
-        //createOutputTable(tempTable).printTable("output");
-        //System.out.println(tempTable.getTableName());
-        //tempTable.printTable("output");
+        if(!isWildList()) {
+            DBServer.output = createOutputTable(createInputTable()).printTable();
+        }
+        else DBServer.output = createInputTable().printTable();
+
     }
 
     public boolean isWildList(){
@@ -132,7 +141,7 @@ public class SelectCommand extends DBCommand{
         Table output = new Table("output", attributeNames);
         int i=0;
         for(Row row: input.getRows().values()){
-            if(!row.getRowName().equalsIgnoreCase("columnnames")){
+            if(!row.getRowName().equalsIgnoreCase("columnNames")){
                 Row newRow = input.modifyRow(row,indexes);
                 output.addRow("row"+i,newRow);
                 i++;
@@ -142,25 +151,17 @@ public class SelectCommand extends DBCommand{
     }
 
     public void condition(){
-        for (int i=0; i<conditions.size(); i++) {
-            Table tempTable1 = null;
-            if (conditions.get(i).size() == 3) {
-                tempTable1 = makeTempTable(conditions.get(i));
-                tempTable1.printTable("output");
-            }
-            i++;
-            String boolFunc = conditions.get(i).get(0);
-            i++;
-            Table tempTable2 = null;
-            if (conditions.get(i).size() == 3) {
-                tempTable2 = makeTempTable(conditions.get(i));
-                tempTable2.printTable("output");
-            }
-            Condition condition = new Condition(tempTable1, tempTable2, boolFunc);
+        String conString;
+        for (ArrayList<String> condition : conditions) {
+            if (condition.size() == 3) {
+                conString = getSelectedIDs(condition);
+            }else conString = condition.toString();
+            conditionList.add(conString);
         }
+        iterateIDList();
     }
 
-    public Table makeTempTable(ArrayList<String> condition){
+    public String getSelectedIDs(ArrayList<String> condition){
         this.attribute = condition.get(0).toLowerCase();
         this.comparator = condition.get(1).toLowerCase();
         this.value = condition.get(2).toLowerCase();
@@ -169,7 +170,62 @@ public class SelectCommand extends DBCommand{
         }catch(IOException e){
             DBServer.output = ("[ERROR]"+newLine+"Attribute "+attribute+" not found in current table");
         }
-        return table.modifyTable(table,attribute,value,comparator);
+        return (table.modifyTable(table,attribute,value,comparator));
+    }
+
+    public void getAllTableIDs(){
+        for(Row row: table.getRows().values()){
+            if(!row.getRowName().equalsIgnoreCase("columnNames")){
+                char id = row.getId(row);
+                tableIDs.add(id);
+            }
+        }
+    }
+
+    public void iterateIDList(){
+        for (String s : conditionList) {
+            if (s.matches(".*\\b(and|or|\\d+)\\b.*")) {
+                idStack.push(s);
+            }
+            if(idStack.size()==3) combineIDList();
+        }
+    }
+
+    public void combineIDList(){
+        String IDList1 = idStack.pop();
+        String boolFunc = idStack.pop();
+        String IDList2 = idStack.pop();
+        ArrayList<Character> output = new ArrayList<>();
+
+        for(char id: tableIDs){
+            switch(boolFunc){
+
+                case "[or]" -> {
+                    if(IDList1.contains(Character.toString(id)) || IDList2.contains(Character.toString(id))){
+                        output.add(id);
+                    }
+                }
+                case "[and]" -> {
+                    if(IDList1.contains(Character.toString(id)) && IDList2.contains(Character.toString(id))){
+                        output.add(id);
+                    }
+                }
+            }
+
+        }
+        idStack.push(output.toString());
+    }
+
+    public Table createInputTable(){
+        ArrayList<String> columnNames = table.getColumns().getValues();
+        Table inputTable = new Table("input", columnNames);
+        if(idStack.isEmpty()) return inputTable;
+        String selectedIDs = idStack.pop();
+        for(int i=0; i<selectedIDs.length(); i++){
+            Row row = table.getRowByID(selectedIDs.charAt(i));
+            if(row!=null) inputTable.addRow("row"+i,row);
+        }
+        return inputTable;
     }
 
     public boolean checkAttributes(){

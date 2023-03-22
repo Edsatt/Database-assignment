@@ -71,8 +71,8 @@ public class InterpreterTests {
         setup("insert into test1 values('Ed', 25);");
         setup("insert into test1 values('Peter', 23);");
         setup("insert into test1 values('Isobel', 24);");
-        setup("select age,name from test1 where age == 25 and name like 'el';");
-//        setup("select name from test1 where name != 'isobel';");
+//        setup("select age,name from test1 where age == 25 and name like 'el';");
+        setup("select test1.age,name from test1 where ((name != 'isobel') or (age >3)) and ((name == 'peter') or (name == 'ed'));");
 //        setup("select name from test1 where age > 24;");
 //        setup("select name from test1 where age <= 24;");
 //        setup("select name from test1 where age < 25;");

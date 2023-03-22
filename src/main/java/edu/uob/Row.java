@@ -28,6 +28,10 @@ public class Row {
         return false;
     }
 
+    public char getId(Row row){
+        return row.getValueByColumn(0).charAt(0);
+    }
+
     public String getValueByColumn(int colIndex){
         return values.get(colIndex);
     }

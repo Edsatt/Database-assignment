@@ -49,7 +49,7 @@ public class Database {
 
     public void printTables(){
         for(String tableName: tables.keySet()){
-            getTable(tableName).printTable(tableName);
+            getTable(tableName).printTable();
         }
     }
 
