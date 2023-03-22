@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Stack;
 
-public class SelectCommand extends DBCommand{
-
-    public SelectCommand(){
+public class UpdateCommand extends DBCommand{
+    String updateAtrib, updateVal;
+    public UpdateCommand(){
         this.databases = DBServer.databases;
         this.tempList = new ArrayList<>();
         this.attributeNames = new ArrayList<>();
@@ -19,6 +19,8 @@ public class SelectCommand extends DBCommand{
         this.conditionList = new ArrayList<>();
         this.tableIDs = new ArrayList<>();
         this.idStack = new Stack<>();
+        this.nameValueList = new ArrayList<>();
+        this.updateAtrib = updateVal = "";
     }
 
     public void setServer(DBServer server) {
@@ -37,48 +39,28 @@ public class SelectCommand extends DBCommand{
         try{
             server.checkInDatabase();
         } catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"Must be Using a database to select values from a table");
+            DBServer.output = ("[ERROR]: Must be Using a database to update values in a table");
             return;
         }
         this.filePath = server.getCurrentFolderPath().concat(File.separator +id.toLowerCase()+".tab");
         try{
             server.fileExists(filePath,true);
         } catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"Table "+id+" not found in current database");
+            DBServer.output = ("[ERROR]: Table "+id+" not found in current database");
             return;
         }
         getTable();
         try{
             tableCheck();
         }catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"Table "+id+" has no attributes");
+            DBServer.output = ("[ERROR]L: Table "+id+" has no attributes");
             return;
-        }
-        if(isWildList()){
-            try {
-                checkList();
-            } catch (IOException e) {
-                DBServer.output = ("[ERROR]" + newLine + "Table referenced by attribute list does not match selected table");
-                return;
-            }
         }
         if(!checkAttributes()) return;
         getAllTableIDs();
         condition();
-        if(isWildList()) {
-            DBServer.output = createOutputTable(createInputTable()).printTable();
-        }
-        else DBServer.output = createInputTable().printTable();
-
-    }
-
-    public boolean isWildList(){
-        if(commandType==null) return true;
-        return (!commandType.equals("WILD"));
-    }
-
-    public void createAttributeList(String attributeName){
-        this.tempList.add(attributeName);
+        table = updateTable();
+        saveTable();
     }
 
     public void checkList() throws IOException{
@@ -107,6 +89,10 @@ public class SelectCommand extends DBCommand{
         this.values.add(value);
     }
 
+    public void createNameValueList(ArrayList<String> nameValueList) {
+        this.nameValueList.add(nameValueList);
+    }
+
     public void addCondition(String value){
         ArrayList<String> condition = new ArrayList<>();
         condition.add(value.toLowerCase());
@@ -125,24 +111,6 @@ public class SelectCommand extends DBCommand{
 
     public void tableCheck() throws IOException {
         if (table == null) throw new IOException("Empty table");
-    }
-
-    public Table createOutputTable(Table input){
-        ArrayList<Integer> indexes = new ArrayList<>();
-        for(String attribute: attributeNames){
-            int index = input.getColumnIndex(attribute);
-            indexes.add(index);
-        }
-        Table output = new Table("output", attributeNames);
-        int i=0;
-        for(Row row: input.getRows().values()){
-            if(!row.getRowName().equalsIgnoreCase("columnNames")){
-                Row newRow = input.modifyRow(row,indexes);
-                output.addRow("row"+i,newRow);
-                i++;
-            }
-        }
-        return output;
     }
 
     public void condition(){
@@ -211,24 +179,34 @@ public class SelectCommand extends DBCommand{
         idStack.push(output.toString());
     }
 
-    public Table createInputTable(){
-        ArrayList<String> columnNames = table.getColumns().getValues();
-        Table inputTable = new Table("input", columnNames);
-        if(idStack.isEmpty()) return inputTable;
+    public Table createOutputTable(){
+        if(idStack.isEmpty()) return table;
         String selectedIDs = idStack.pop();
+        int index = table.getColumnIndex(updateAtrib);
+        System.out.println(index);
         for(int i=0; i<selectedIDs.length(); i++){
             Row row = table.getRowByID(selectedIDs.charAt(i));
-            if(row!=null) inputTable.addRow("row"+i,row);
+            if(row!=null) row.setValue(index, updateVal);
         }
-        return inputTable;
+        return table;
+    }
+
+    public Table updateTable(){
+        for(ArrayList<String> nameValuePair: nameValueList){
+            updateAtrib = nameValuePair.get(0);
+            updateVal = nameValuePair.get(2);
+            table = createOutputTable();
+        }
+        return table;
     }
 
     public boolean checkAttributes(){
-        for(String name: attributeNames){
+        for(ArrayList<String> nameValuePair: nameValueList){
+            String attribute = nameValuePair.get(0);
             try{
-                checkAttributeName(name);
+                checkAttributeName(attribute);
             }catch(IOException e){
-                DBServer.output = ("[ERROR]"+newLine+"Attribute "+name+" not found in current table");
+                DBServer.output = ("[ERROR]: Attribute "+attribute+" not found in current table");
                 return false;
             }
         }
@@ -237,6 +215,10 @@ public class SelectCommand extends DBCommand{
 
     public void checkAttributeName(String name) throws IOException{
         if(!table.searchColumns(name)) throw new IOException("Attribute not found");
+    }
+
+    public void saveTable(){
+        table.outputTable(filePath);
     }
 
 }

@@ -71,16 +71,34 @@ public class InterpreterTests {
         setup("insert into test1 values('Ed', 25);");
         setup("insert into test1 values('Peter', 23);");
         setup("insert into test1 values('Isobel', 24);");
-//        setup("select age,name from test1 where age == 25 and name like 'el';");
-        setup("select test1.age,name from test1 where ((name != 'isobel') or (age >3)) and ((name == 'peter') or (name == 'ed'));");
+        //setup("select age,name from test1 where age == 24 and name like 'el';");
+//        System.out.println(testServer.getOutput());
+//        setup("select test1.age,name from test1 where ((name != 'isobel') or (age >3)) and ((name == 'peter') or (name == 'ed'));");
+//        System.out.println(testServer.getOutput());
 //        setup("select name from test1 where age > 24;");
+//        System.out.println(testServer.getOutput());
 //        setup("select name from test1 where age <= 24;");
+//        System.out.println(testServer.getOutput());
 //        setup("select name from test1 where age < 25;");
+//        System.out.println(testServer.getOutput());
 //        setup("select name from test1 where age >= 24;");
-//        setup("select age from test1 where name like 'e';");
+//        System.out.println(testServer.getOutput());
+        setup("select age from test1 where (age==25);");
         System.out.println(testServer.getOutput());
         setup("drop database test");
+    }
 
+    @Test
+    public void updateTests(){
+//        setup("create database test;");
+        setup("use test");
+//        setup("create table test1(name, age);");
+//        setup("insert into test1 values('Ed', 25);");
+//        setup("insert into test1 values('Peter', 23);");
+//        setup("insert into test1 values('Isobel', 24);");
+        setup("update test1 set name='Fred', age=23 where age == 25;");
+        System.out.println(testServer.getOutput());
+//        setup("drop database test");
     }
 
 

@@ -1,7 +1,5 @@
 package edu.uob;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +30,7 @@ public class FileParser {
         return createTable();
     }
 
-    public void lineToRow(@NotNull String fileLine){
+    public void lineToRow(String fileLine){
         String [] line = fileLine.split("\t");
         ArrayList<String> rowList = new ArrayList<>(Arrays.asList(line));
         Row row = new Row("temp", rowList);

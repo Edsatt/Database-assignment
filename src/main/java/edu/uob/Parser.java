@@ -18,6 +18,7 @@ public class Parser {
     DBCommand command;
     private String digitString;
     private  ArrayList<String> condition;
+    private ArrayList<String> nameValueList;
 
     public Parser(ArrayList<Token> tokens){
         this.tokens = tokens;
@@ -28,6 +29,7 @@ public class Parser {
         this.attributeName = "";
         this.digitString = "";
         this.condition = new ArrayList<>();
+        this.nameValueList = new ArrayList<>();
     }
 
     public void outputParseResult(){
@@ -502,7 +504,9 @@ public class Parser {
     }
 
     public void parseUpdateQuery(){
+        buildUpdateCommand();
         if(tokenType(getNextToken(), PLAIN_TEXT)){
+            command.setId(getCurrentToken().getValue());
             if(tokenValue(getNextToken(),"SET")){
                 parseNameValueList();
                 if(tokenValue(getNextToken(), "WHERE")){
@@ -518,25 +522,44 @@ public class Parser {
         logError("Error with UPDATE query syntax");
     }
 
+    public void buildUpdateCommand(){
+        this.command = new UpdateCommand();
+    }
+
     private void parseNameValueList() {
         incrementProgramCount(1);
         if(parseNameValuePair()){
+            saveNameValueList();
             if(checkNextToken(",")){
                 incrementProgramCount(1);
                 parseNameValueList();
+
             }
         } else logError("Expecting name value pair");
     }
 
     private boolean parseNameValuePair(){
         if(parseAttributeName()){
+            makeNameValueList(getCurrentToken().getValue());
             if(tokenValue(getNextToken(), "=")){
+                makeNameValueList(getCurrentToken().getValue());
                 incrementProgramCount(1);
+                makeNameValueList(getCurrentToken().getValue());
                 return(parseValue());
             }
         }
         return false;
     }
+
+    public void makeNameValueList(String value){
+        nameValueList.add(value);
+    }
+
+    public void saveNameValueList(){
+        command.createNameValueList(nameValueList);
+        nameValueList = new ArrayList<>();
+    }
+
     public void parseDeleteQuery(){
         if(tokenValue(getNextToken(), "FROM")){
             incrementProgramCount(1);

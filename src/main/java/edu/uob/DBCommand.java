@@ -3,6 +3,7 @@ package edu.uob;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public abstract class DBCommand {
 
@@ -17,6 +18,7 @@ public abstract class DBCommand {
     List<String> attributeNames;
     List<String> values;
     ArrayList<ArrayList<String>> conditions;
+    ArrayList<ArrayList<String>> nameValueList;
     String attributeName;
     String commandType;
     ArrayList<Row> rows;
@@ -24,9 +26,13 @@ public abstract class DBCommand {
     String id;
     String filePath;
     String idFilePath;
+    String attribute, comparator, value;
+    ArrayList<String> conditionList;
+    ArrayList<Character> tableIDs;
+    Stack<String> idStack;
     final String newLine = System.lineSeparator();
 
-    public void interpretCommand(){}
+    public abstract void interpretCommand();
 
     public void setServer(DBServer server){}
 
@@ -43,4 +49,6 @@ public abstract class DBCommand {
     public void checkList() throws IOException {}
 
     public void setCommandType(String commandType){}
+
+    public void createNameValueList(ArrayList<String> nameValueList) {}
 }
