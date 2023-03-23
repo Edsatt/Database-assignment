@@ -39,6 +39,7 @@ public class Parser {
 
     public void outputParseResult(){
         if(isParseSuccess()) outputString = "[OK]";
+        else outputString = "[ERROR]: "+outputString;
         DBServer.output = outputString;
     }
 
@@ -300,7 +301,7 @@ public class Parser {
                         incrementProgramCount(1);
                         parseValueList();
                         if(!tokenValue(getNextToken(), ")")) {
-                            logError("Missing braces in query");
+                            logError("Invalid query");
                         }
                         return;
                     }
@@ -413,7 +414,8 @@ public class Parser {
                     if(isWithinBraces() || equalNumBraces()) {
                         logError("Unexpected braces found in query");
                     }
-                }
+                }else if(!checkNextToken(";")) logError("Invalid query");
+
             }
             return;
         }

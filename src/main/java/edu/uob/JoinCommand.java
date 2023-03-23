@@ -139,12 +139,12 @@ public class JoinCommand extends DBCommand{
             switch(tableNum){
                 case "table1" ->{
                     if(!columnName.equalsIgnoreCase("id") && !columnName.equalsIgnoreCase(attribute1)){
-                        joinedCols.add(columnName);
+                        joinedCols.add(id1+"."+columnName);
                     }
                 }
                 case "table2" ->{
                     if(!columnName.equalsIgnoreCase("id") && !columnName.equalsIgnoreCase(attribute2)){
-                        joinedCols.add(columnName);
+                        joinedCols.add(id2+"."+columnName);
                     }
                 }
             }

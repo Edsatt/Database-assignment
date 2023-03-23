@@ -125,7 +125,7 @@ public class InsertCommand extends DBCommand{
 
 
     public int createNewId(){
-        int id = idList.size();
+        int id = idList.size()+1;
         idList.add(id);
         return id;
     }

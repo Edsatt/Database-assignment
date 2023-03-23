@@ -223,7 +223,7 @@ public class InterpreterTests {
         setup("insert into people values('Isobel', 24, 'Vet');");
         setup("select name,id from people;");
         String singleLine = testServer.getOutput().replace("\n"," ").trim();
-        assertEquals(singleLine.charAt(singleLine.length()-1), '2');
+        assertEquals(singleLine.charAt(singleLine.length()-1), '3');
         setup("drop database test;");
     }
 
@@ -274,7 +274,7 @@ public class InterpreterTests {
         assertEquals(people.getNumRows(), 2);
         setup("insert into people values('Ed', 25, 'Student')");
         //ids are unique, so when a row is and a new row added the id is new
-        assertEquals(people.getRow("row 2").getValueByColumn(0), "3");
+        assertEquals(people.getRow("row 2").getValueByColumn(0), "4");
         setup("drop database test");
     }
 
@@ -295,9 +295,9 @@ public class InterpreterTests {
         String[] tokens = singleLine.split(" ");
         String[] columnNames = tokens[0].split("\t");
         assertEquals(columnNames[0], "id");
-        assertEquals(columnNames[1], "name");
-        assertEquals(columnNames[2], "age");
-        assertTrue(columnNames[3].contains("job"));
+        assertEquals(columnNames[1], "test1.name");
+        assertEquals(columnNames[2], "test1.age");
+        assertTrue(columnNames[3].contains("test2.job"));
         setup("drop database test");
     }
 
