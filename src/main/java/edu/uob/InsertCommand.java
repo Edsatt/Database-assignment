@@ -55,7 +55,6 @@ public class InsertCommand extends DBCommand{
     }
 
     public void createValueList(String value) {
-        value = value.toLowerCase();
         this.values.add(value);
     }
 

@@ -80,10 +80,6 @@ public class Tokeniser {
         for (String tokenString : tokenStrings) tokens.add(new Token(tokenString));
     }
 
-    public void printToken(Token token){
-        System.out.println("Value = " +token.getValue() +" Type = " +token.getType());
-    }
-
     public ArrayList<Token> getTokens() {
         return tokens;
     }

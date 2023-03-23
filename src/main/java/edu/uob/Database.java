@@ -1,9 +1,9 @@
 package edu.uob;
 import java.util.*;
-//TableList contains a hashmap of the different table names
+
 public class Database {
-    private LinkedHashMap<String, Table> tables;
-    private String databaseName;
+    private final LinkedHashMap<String, Table> tables;
+    private final String databaseName;
 
     public Database(String name){
         tables = new LinkedHashMap<>();
@@ -12,10 +12,6 @@ public class Database {
 
     public String getDatabaseName(){
         return databaseName;
-    }
-
-    public LinkedHashMap<String, Table> getTables(){
-        return tables;
     }
 
     public Table getTable(String tableName){
@@ -28,29 +24,6 @@ public class Database {
 
     public void removeTable(String tableName){
         tables.remove(tableName);
-    }
-
-    public int getNumTables(){
-        return tables.size();
-    }
-
-
-    public void printTableNames(){
-        for(String name: tables.keySet()){
-            System.out.println(name);
-        }
-    }
-
-    public void outputTables(String storageFolderPath){
-        for(String tableName: tables.keySet()){
-            getTable(tableName).outputTable(storageFolderPath);
-        }
-    }
-
-    public void printTables(){
-        for(String tableName: tables.keySet()){
-            getTable(tableName).printTable();
-        }
     }
 
     public boolean searchDatabase(String name){

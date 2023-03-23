@@ -1,13 +1,10 @@
 package edu.uob;
 
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.List;
-
-//Each row has a number and an array list for its cells
 public class Row {
-    private ArrayList<String> values;
-    private String rowName;
+    private final ArrayList<String> values;
+    private final String rowName;
 
     public Row(String rowName, List<String> values){
         this.values = new ArrayList<>();
@@ -60,19 +57,12 @@ public class Row {
     public void addValueList(List<String> values){
         this.values.addAll(values);
     }
+
     public void setValue(int index, String value){
         values.set(index, value);
     }
 
-    public void setRowName(String rowName){
-        this.rowName = rowName;
-    }
-
     public void removeValue(String value){
         values.remove(value);
-    }
-
-    public String outputRow(){
-        return String.join("\t", getValues());
     }
 }

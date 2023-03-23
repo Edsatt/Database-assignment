@@ -12,5 +12,5 @@ public enum TokenType {
     SYMBOL,
     SPACE,
     WILD,
-    INVALID;
+    INVALID
 }

@@ -3,22 +3,17 @@ package edu.uob;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import static edu.uob.ValueType.*;
 
-//Table class contains a hashmap for its rows and keys
 public class Table {
-    private LinkedHashMap<String, Row> rows;
-    private LinkedHashMap<String, Key> keys;
-    private String tableName;
+    private final LinkedHashMap<String, Row> rows;
 
-    public Table(String tableName, List<String> values){
+    public Table(List<String> values){
         this.rows = new LinkedHashMap<>();
-        this.keys = new LinkedHashMap<>();
-        this.tableName = tableName;
         Row columnNames = new Row("columnNames", values);
         addRow("columnNames", columnNames);
     }
@@ -54,39 +49,15 @@ public class Table {
 
     public boolean searchColumns(String query){
         Row columnNames = getRow("columnNames");
-        return columnNames.contains(query);
-    }
-
-    public Key getKey(String colName){
-        return keys.get(colName);
-    }
-
-    public String getTableName() {
-        return tableName;
+        return !columnNames.contains(query);
     }
 
     public void addRow(String rowName, Row row){
         rows.put(rowName, row);
     }
 
-    public void addColumn(int columnIndex, String columnName){
-        getRow("columnNames").addValue(columnIndex, columnName);
-    }
-
-    public void setColumn(int columnIndex, String columnName){
-        getRow("columnNames").setValue(columnIndex, columnName);
-    }
-
-    public void setTableName(String tableName) {
-        this.tableName = tableName;
-    }
-
     public void addColumnList(List<String> columnNames){
         getRow("columnNames").addValueList(columnNames);
-    }
-
-    public void addKey(String colName, Key key){
-        keys.put(colName, key);
     }
 
     public void removeRow(String rowName){
@@ -108,10 +79,6 @@ public class Table {
         for (Row row: rows.values()){
             row.removeValue(row.getValueByColumn(index));
         }
-    }
-
-    public void removeKey(String colName){
-        keys.remove(colName);
     }
 
     public int getNumRows(){
@@ -139,16 +106,10 @@ public class Table {
     public String printTable(){
         String tableString ="";
         for (Row row : rows.values()) {
-            String rowString = String.join("\t", row.getValues());
+            String rowString = String.join("\t", row.getValues()).replace("'", "");
             tableString = tableString.concat(rowString +System.lineSeparator());
         }
         return tableString;
-    }
-
-    public void printTableKeys(){
-        for(String name: rows.keySet()){
-            System.out.println(name);
-        }
     }
 
     public String modifyTable(Table input, String attributeName, String value, String comparator){
@@ -174,23 +135,31 @@ public class Table {
                         }
                     }
                     case ">" -> {
-                        if(compareGreaterThan(row, columnIndex, value)){
-                            output.add(row.getId(row));
+                        if(getType(value)==DOUBLE){
+                            if(compareGreaterThan(row, columnIndex, value)){
+                                output.add(row.getId(row));
+                            }
                         }
                     }
                     case "<" -> {
-                        if(compareLessThan(row, columnIndex, value)){
-                            output.add(row.getId(row));
+                        if(getType(value)==DOUBLE){
+                            if(compareLessThan(row, columnIndex, value)){
+                                output.add(row.getId(row));
+                            }
                         }
                     }
                     case ">=" -> {
-                        if(!compareLessThan(row, columnIndex, value)){
-                            output.add(row.getId(row));
+                        if(getType(value)==DOUBLE){
+                            if(!compareLessThan(row, columnIndex, value)){
+                                output.add(row.getId(row));
+                            }
                         }
                     }
                     case "<=" -> {
-                        if(!compareGreaterThan(row, columnIndex, value)){
-                            output.add(row.getId(row));
+                        if(getType(value)==DOUBLE){
+                            if(!compareGreaterThan(row, columnIndex, value)){
+                                output.add(row.getId(row));
+                            }
                         }
                     }
                 }
@@ -200,6 +169,9 @@ public class Table {
     }
 
     private boolean compareLike(Row row, int index, String value) {
+        if(getType(value)!=STRING){
+            return false;
+        }
         value = value.replace("'", "");
         return row.getValueByColumn(index).contains(value);
     }
@@ -218,5 +190,18 @@ public class Table {
         double rowVal = Double.parseDouble(row.getValueByColumn(index));
         double queryVal = Double.parseDouble(value);
         return rowVal<queryVal;
+    }
+
+    public ValueType getType(String value){
+        switch(value.toLowerCase()){
+            case "null" -> {
+                return NULL;
+            }
+            case "true", "false" -> {
+                return BOOLEAN;
+            }
+        }
+        if(value.startsWith("'") && value.endsWith("'")) return STRING;
+        return DOUBLE;
     }
 }

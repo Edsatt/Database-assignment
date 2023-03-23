@@ -19,6 +19,9 @@ public class Parser {
     private String digitString;
     private  ArrayList<String> condition;
     private ArrayList<String> nameValueList;
+    private ArrayList<String> joinList;
+
+    private final int joinQueryLength;
 
     public Parser(ArrayList<Token> tokens){
         this.tokens = tokens;
@@ -30,6 +33,8 @@ public class Parser {
         this.digitString = "";
         this.condition = new ArrayList<>();
         this.nameValueList = new ArrayList<>();
+        this.joinList = new ArrayList<>();
+        this.joinQueryLength = 7;
     }
 
     public void outputParseResult(){
@@ -561,9 +566,11 @@ public class Parser {
     }
 
     public void parseDeleteQuery(){
+        buildDeleteCommand();
         if(tokenValue(getNextToken(), "FROM")){
             incrementProgramCount(1);
             if(parsePlainText()){
+                command.setId(getCurrentToken().getValue());
                 if(tokenValue(getNextToken(),"WHERE")){
                     initialiseBrackets();
                     conditionBraceCheck();
@@ -575,8 +582,13 @@ public class Parser {
         logError("Error in DELETE query syntax");
     }
 
+    public void buildDeleteCommand(){
+        this.command = new DeleteCommand();
+    }
+
     public void parseJoinQuery(){
         incrementProgramCount(1);
+        buildJoinCommand(programCount);
         if(parsePlainText()){
             if(tokenValue(getNextToken(), "AND")){
                 incrementProgramCount(1);
@@ -594,5 +606,27 @@ public class Parser {
             }
         }
         logError("Error in JOIN query syntax");
+    }
+
+    public void buildJoinCommand(int pc){
+        this.command = new JoinCommand();
+        String value;
+        for(int i=pc; i<pc+joinQueryLength; i++){
+            if(i>= tokens.size()) return;
+            value = tokens.get(i).getValue();
+            if(!value.toLowerCase().matches(".*\\b(and|on|\\d+)\\b.*")){
+                makeJoinList(value);
+            }
+        }
+        saveJoinList();
+    }
+
+    public void makeJoinList(String value){
+        joinList.add(value);
+    }
+
+    public void saveJoinList(){
+        command.addJoinList(joinList);
+        joinList = new ArrayList<>();
     }
 }

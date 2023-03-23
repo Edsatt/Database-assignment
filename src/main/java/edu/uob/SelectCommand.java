@@ -54,7 +54,7 @@ public class SelectCommand extends DBCommand{
             DBServer.output = ("[ERROR]"+newLine+"Table "+id+" has no attributes");
             return;
         }
-        if(isWildList()){
+        if(!allSelected()){
             try {
                 checkList();
             } catch (IOException e) {
@@ -64,17 +64,29 @@ public class SelectCommand extends DBCommand{
         }
         if(!checkAttributes()) return;
         getAllTableIDs();
-        condition();
-        if(isWildList()) {
-            DBServer.output = createOutputTable(createInputTable()).printTable();
+        if(!hasCondition()){
+            if(allSelected()) {
+                DBServer.output = DBServer.output.concat
+                        (newLine+table.printTable());
+            }else{
+                DBServer.output = DBServer.output.concat
+                        (newLine+createOutputTable(table).printTable());
+            }
+        }else{
+            if(allSelected()) {
+                DBServer.output = DBServer.output.concat
+                        (newLine+createInputTable().printTable());
+            }
+            else {
+                DBServer.output = DBServer.output.concat
+                        (newLine+createOutputTable(createInputTable()).printTable());
+            }
         }
-        else DBServer.output = createInputTable().printTable();
-
     }
 
-    public boolean isWildList(){
-        if(commandType==null) return true;
-        return (!commandType.equals("WILD"));
+    public boolean allSelected(){
+        if(commandType==null) return false;
+        return (commandType.equals("WILD"));
     }
 
     public void createAttributeList(String attributeName){
@@ -133,7 +145,7 @@ public class SelectCommand extends DBCommand{
             int index = input.getColumnIndex(attribute);
             indexes.add(index);
         }
-        Table output = new Table("output", attributeNames);
+        Table output = new Table(attributeNames);
         int i=0;
         for(Row row: input.getRows().values()){
             if(!row.getRowName().equalsIgnoreCase("columnNames")){
@@ -145,7 +157,8 @@ public class SelectCommand extends DBCommand{
         return output;
     }
 
-    public void condition(){
+    public boolean hasCondition(){
+        if(conditions.size()==0) return false;
         String conString;
         for (ArrayList<String> condition : conditions) {
             if (condition.size() == 3) {
@@ -154,6 +167,7 @@ public class SelectCommand extends DBCommand{
             conditionList.add(conString);
         }
         iterateIDList();
+        return true;
     }
 
     public String getSelectedIDs(ArrayList<String> condition){
@@ -213,7 +227,7 @@ public class SelectCommand extends DBCommand{
 
     public Table createInputTable(){
         ArrayList<String> columnNames = table.getColumns().getValues();
-        Table inputTable = new Table("input", columnNames);
+        Table inputTable = new Table(columnNames);
         if(idStack.isEmpty()) return inputTable;
         String selectedIDs = idStack.pop();
         for(int i=0; i<selectedIDs.length(); i++){
@@ -236,7 +250,7 @@ public class SelectCommand extends DBCommand{
     }
 
     public void checkAttributeName(String name) throws IOException{
-        if(!table.searchColumns(name)) throw new IOException("Attribute not found");
+        if(table.searchColumns(name)) throw new IOException("Attribute not found");
     }
 
 }

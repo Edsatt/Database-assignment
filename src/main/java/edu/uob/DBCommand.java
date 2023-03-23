@@ -8,7 +8,6 @@ import java.util.Stack;
 public abstract class DBCommand {
 
     DBServer server;
-    ArrayList<Token> tokens;
     DatabaseList databases;
     Database database;
     Table table;
@@ -21,7 +20,6 @@ public abstract class DBCommand {
     ArrayList<ArrayList<String>> nameValueList;
     String attributeName;
     String commandType;
-    ArrayList<Row> rows;
     Row row;
     String id;
     String filePath;
@@ -51,4 +49,6 @@ public abstract class DBCommand {
     public void setCommandType(String commandType){}
 
     public void createNameValueList(ArrayList<String> nameValueList) {}
+
+    public void addJoinList(ArrayList<String> joinList){}
 }

@@ -104,13 +104,13 @@ public class AlterCommand extends DBCommand{
 
     public void addColumn(){
         if (table == null){
-            table = new Table(id,attributeNames);
+            table = new Table(attributeNames);
         } else table.addColumnList(attributeNames);
     }
 
     public void dropColumn() throws IOException{
         if(table == null) throw new IOException("Empty table");
-        else if (!table.searchColumns(attributeName)) throw new IOException("Column not found");
+        else if (table.searchColumns(attributeName)) throw new IOException("Column not found");
         table.removeColumn(attributeName);
     }
 

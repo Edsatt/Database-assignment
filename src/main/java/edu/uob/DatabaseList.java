@@ -1,7 +1,6 @@
 package edu.uob;
 
 import java.util.HashMap;
-import java.util.Objects;
 
 public class DatabaseList {
 
@@ -16,14 +15,6 @@ public class DatabaseList {
 
     public void addDatabase(String name, Database database){
         databases.put(name, database);
-    }
-
-    public void searchDatabases(String name){
-        for(String dbName: databases.keySet()){
-            if(Objects.equals(dbName, name)){
-                return;
-            }
-        }
     }
 
     public Database getDatabase(String name){

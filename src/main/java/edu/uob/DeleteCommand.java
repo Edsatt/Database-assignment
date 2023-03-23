@@ -5,21 +5,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Stack;
 
-public class UpdateCommand extends DBCommand{
-    String updateAtrib, updateVal;
-    public UpdateCommand(){
-        this.databases = DBServer.databases;
-        this.tempList = new ArrayList<>();
-        this.attributeNames = new ArrayList<>();
+public class DeleteCommand extends DBCommand{
+    public DeleteCommand(){
         this.conditions = new ArrayList<>();
-        this.values = new ArrayList<>();
-        this.hasList = false;
         this.attribute = this.comparator = this.value = "";
         this.conditionList = new ArrayList<>();
         this.tableIDs = new ArrayList<>();
         this.idStack = new Stack<>();
-        this.nameValueList = new ArrayList<>();
-        this.updateAtrib = updateVal = "";
     }
 
     public void setServer(DBServer server) {
@@ -51,20 +43,10 @@ public class UpdateCommand extends DBCommand{
             DBServer.output = ("[ERROR]L: Table "+id+" has no attributes");
             return;
         }
-        if(!checkAttributes()) return;
         getAllTableIDs();
         condition();
-        updateTable();
+        delete();
         saveTable();
-    }
-
-    public void createValueList(String value) {
-        value = value.toLowerCase();
-        this.values.add(value);
-    }
-
-    public void createNameValueList(ArrayList<String> nameValueList) {
-        this.nameValueList.add(nameValueList);
     }
 
     public void addCondition(String value){
@@ -153,39 +135,17 @@ public class UpdateCommand extends DBCommand{
         idStack.push(output.toString());
     }
 
-    public void createOutputTable(){
-        if(idStack.isEmpty()) return;
-        String selectedIDs = idStack.peek();
-        int index = table.getColumnIndex(updateAtrib);
-        for(int i=0; i<selectedIDs.length(); i++){
-            Row row = table.getRowByID(selectedIDs.charAt(i));
-            if(row!=null) row.setValue(index, updateVal);
-        }
-    }
-
-    public void updateTable(){
-        for(ArrayList<String> nameValuePair: nameValueList){
-            updateAtrib = nameValuePair.get(0);
-            updateVal = nameValuePair.get(2);
-            createOutputTable();
-        }
-    }
-
-    public boolean checkAttributes(){
-        for(ArrayList<String> nameValuePair: nameValueList){
-            String attribute = nameValuePair.get(0);
-            try{
-                checkAttributeName(attribute);
-            }catch(IOException e){
-                DBServer.output = ("[ERROR]: Attribute "+attribute+" not found in current table");
-                return false;
-            }
-        }
-        return true;
-    }
-
     public void checkAttributeName(String name) throws IOException{
         if(table.searchColumns(name)) throw new IOException("Attribute not found");
+    }
+
+    public void delete(){
+        if(idStack.isEmpty()) return;
+        String selectedIDs = idStack.pop();
+        for(int i=0; i<selectedIDs.length(); i++){
+            Row row = table.getRowByID(selectedIDs.charAt(i));
+            if(row!=null) table.removeRow(row.getRowName());
+        }
     }
 
     public void saveTable(){
@@ -193,3 +153,4 @@ public class UpdateCommand extends DBCommand{
     }
 
 }
+

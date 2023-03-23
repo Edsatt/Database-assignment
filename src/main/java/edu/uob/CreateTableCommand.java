@@ -107,7 +107,7 @@ public class CreateTableCommand extends DBCommand{
     }
 
     public void createTable(){
-        table = new Table(id, attributeNames);
+        table = new Table(attributeNames);
         server.getDatabase().addTable(id, table);
     }
 

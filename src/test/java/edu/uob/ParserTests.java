@@ -49,6 +49,8 @@ public class ParserTests {
         assertFalse(parser.isParseSuccess());
         setup("create database table;");
         assertFalse(parser.isParseSuccess());
+        setup("create database database;");
+        assertFalse(parser.isParseSuccess());
     }
 
     @Test

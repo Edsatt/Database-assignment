@@ -15,7 +15,6 @@ public class DBServer {
     private static final char END_OF_TRANSMISSION = 4;
     private final String storageFolderPath;
     private String currentFolderPath;
-    private String newLine = System.lineSeparator();
     Tokeniser tokeniser;
     static ArrayList<Token> tokens;
     static DatabaseList databases;
@@ -23,9 +22,7 @@ public class DBServer {
     private Table table;
     static String output;
 
-    private FileParser fileParser;
-
-    public static void main(String args[]) throws IOException {
+    public static void main(String[] args) throws IOException {
         DBServer server = new DBServer();
         server.blockingListenOn(8888);
     }
@@ -42,16 +39,7 @@ public class DBServer {
         fileList(storageFolderPath);
     }
 
-    public String handleCommand(String command) throws Exception {
-//        StringBuilder output = new StringBuilder();
-//        for(Table table: database.getTables().values()){
-//            output.append("Table name: ").append(table.getTableName()).append(newLine);
-//            for(Row row: table.getRows().values()){
-//                output.append(row.outputRow()).append(newLine);
-//            }
-//            output.append(newLine);
-//        }
-//        return output.toString();
+    public String handleCommand(String command){
         tokeniser = new Tokeniser(command);
         tokens = tokeniser.getTokens();
         Parser parser = new Parser(tokens);
@@ -135,15 +123,16 @@ public class DBServer {
         return table;
     }
 
+    public Table importTable(String filePath){
+        FileParser fileParser = new FileParser();
+        return fileParser.fileReader(filePath);
+    }
     //for testing
     public String getOutput() {
         return output;
     }
 
-    public Table importTable(String filePath){
-        fileParser = new FileParser();
-        return fileParser.fileReader(filePath);
-    }
+
 
     //  === Methods below handle networking aspects of the project - you will not need to change these ! ===
 
