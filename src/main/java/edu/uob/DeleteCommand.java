@@ -23,30 +23,45 @@ public class DeleteCommand extends DBCommand{
     }
 
     public void interpretCommand() {
-        try{
-            server.checkInDatabase();
-        } catch(IOException e){
-            DBServer.output = ("[ERROR]: Must be Using a database to update values in a table");
-            return;
-        }
+        if(notInDatabase()) return;
         this.filePath = server.getCurrentFolderPath().concat(File.separator +id.toLowerCase()+".tab");
-        try{
-            server.fileExists(filePath,true);
-        } catch(IOException e){
-            DBServer.output = ("[ERROR]: Table "+id+" not found in current database");
-            return;
-        }
+        if(!checkFileExists()) return;
         getTable();
-        try{
-            tableCheck();
-        }catch(IOException e){
-            DBServer.output = ("[ERROR]L: Table "+id+" has no attributes");
-            return;
-        }
+        if(tableIsNull()) return;
         getAllTableIDs();
         condition();
         delete();
         saveTable();
+    }
+
+    public boolean notInDatabase(){
+        try{
+            server.checkInDatabase();
+        } catch(IOException e){
+            DBServer.output = ("[ERROR]: Must be Using a database to update values in a table");
+            return true;
+        }
+        return false;
+    }
+
+    public boolean checkFileExists(){
+        try{
+            server.fileExists(filePath,true);
+        } catch(IOException e){
+            DBServer.output = ("[ERROR]: Table "+id+" not found in current database");
+            return false;
+        }
+        return true;
+    }
+
+    public boolean tableIsNull(){
+        try{
+            tableCheck();
+        }catch(IOException e){
+            DBServer.output = ("[ERROR]: Table "+id+" has no attributes");
+            return true;
+        }
+        return false;
     }
 
     public void addCondition(String value){
@@ -87,7 +102,7 @@ public class DeleteCommand extends DBCommand{
         try{
             checkAttributeName(attribute);
         }catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"Attribute "+attribute+" not found in current table");
+            DBServer.output = ("[ERROR]: Attribute "+attribute+" not found in current table");
         }
         return (table.modifyTable(table,attribute,value,comparator));
     }

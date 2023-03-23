@@ -35,12 +35,7 @@ public class JoinCommand extends DBCommand{
     }
 
     public void interpretCommand() {
-        try{
-            server.checkInDatabase();
-        } catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"Must be Using a database to join tables");
-            return;
-        }
+        if(notInDatabase()) return;
         this.filePath1 = server.getCurrentFolderPath().concat(File.separator + id1.toLowerCase()+".tab");
         this.filePath2 = server.getCurrentFolderPath().concat(File.separator + id2.toLowerCase()+".tab");
         if(!checkExists()) return;
@@ -54,17 +49,27 @@ public class JoinCommand extends DBCommand{
         DBServer.output = (joinedTable.printTable());
     }
 
+    public boolean notInDatabase() {
+        try{
+            server.checkInDatabase();
+        } catch(IOException e){
+            DBServer.output = ("[ERROR]: Must be Using a database to join tables");
+            return true;
+        }
+        return false;
+    }
+
     public boolean checkExists(){
         try{
             server.fileExists(filePath1,true);
         } catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+table1+" not found in current database");
+            DBServer.output = ("[ERROR]: "+table1+" not found in current database");
             return false;
         }
         try{
             server.fileExists(filePath2,true);
         } catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+table2+" not found in current database");
+            DBServer.output = ("[ERROR]: "+table2+" not found in current database");
             return false;
         }
         return true;
@@ -85,13 +90,13 @@ public class JoinCommand extends DBCommand{
         try{
             tableCheck(table1);
         }catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+id1+" has no attributes");
+            DBServer.output = ("[ERROR]: "+id1+" has no attributes");
             return false;
         }
         try{
             tableCheck(table2);
         }catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+id2+" has no attributes");
+            DBServer.output = ("[ERROR]: "+id2+" has no attributes");
             return false;
         }
         return true;
@@ -105,13 +110,13 @@ public class JoinCommand extends DBCommand{
         try{
             checkAttributeName(table1, attribute1);
         }catch (IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"attribute "+attribute1+" not found in table "+id1);
+            DBServer.output = ("[ERROR]: attribute "+attribute1+" not found in table "+id1);
             return false;
         }
         try{
             checkAttributeName(table2, attribute2);
         }catch (IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"attribute "+attribute2+" not found in table "+id2);
+            DBServer.output = ("[ERROR]: attribute "+attribute2+" not found in table "+id2);
             return false;
         }
         return true;
@@ -209,7 +214,5 @@ public class JoinCommand extends DBCommand{
             }
         }
     }
-
-
 }
 

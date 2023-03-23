@@ -3,10 +3,7 @@ package edu.uob;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,9 +13,6 @@ public class InterpreterTests {
     Parser parser;
     DBCommand command;
     DBServer testServer = new DBServer();
-    DatabaseList databases;
-    Database database;
-    Table table;
     String output;
 
 

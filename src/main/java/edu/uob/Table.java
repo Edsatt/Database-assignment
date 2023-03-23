@@ -107,6 +107,7 @@ public class Table {
         String tableString ="";
         for (Row row : rows.values()) {
             String rowString = String.join("\t", row.getValues()).replace("'", "");
+            rowString = rowString.replace("null", "");
             tableString = tableString.concat(rowString +System.lineSeparator());
         }
         return tableString;

@@ -21,17 +21,29 @@ public class CreateDBCommand extends DBCommand{
 
     public void interpretCommand() {
         filePath = server.getStorageFolderPath().concat(File.separator +id.toLowerCase());
+        if(!checkFileExists()) return;
+        if(!canCreateDirectory()) return;
+        database = new Database(id);
+        server.addDatabase(id, database);
+    }
+
+    public boolean checkFileExists(){
         try{
             server.fileExists(filePath,false);
         } catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"Database "+id+" already exists");
+            DBServer.output = ("[ERROR]: Database "+id+" already exists");
+            return false;
         }
+        return true;
+    }
+
+    public boolean canCreateDirectory(){
         try {
             Files.createDirectories(Paths.get(filePath));
         } catch(IOException ioe) {
-            DBServer.output = ("[ERROR]"+newLine+"Cannot create folder");
+            DBServer.output = ("[ERROR]: Cannot create folder");
+            return false;
         }
-        database = new Database(id);
-        server.addDatabase(id, database);
+        return true;
     }
 }

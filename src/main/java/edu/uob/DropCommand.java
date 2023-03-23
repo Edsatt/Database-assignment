@@ -24,6 +24,12 @@ public class DropCommand extends DBCommand{
     }
 
     public void interpretCommand() {
+        databaseOrTable();
+        if(!checkFileExists()) return;
+        drop();
+    }
+
+    public void databaseOrTable(){
         switch(commandType){
             case "DATABASE" -> filePath = server.getStorageFolderPath().concat(File.separator +id.toLowerCase());
             case "TABLE" -> {
@@ -31,12 +37,19 @@ public class DropCommand extends DBCommand{
                 idFilePath = server.getCurrentFolderPath().concat(File.separator +id.toLowerCase()+"_id.txt");
             }
         }
+    }
+
+    public boolean checkFileExists(){
         try{
             server.fileExists(filePath,true);
         } catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+" "+commandType+" "+id+" not found");
-            return;
+            DBServer.output = ("[ERROR]: "+commandType+" "+id+" not found");
+            return false;
         }
+        return true;
+    }
+
+    public void drop(){
         try{
             switch(commandType){
                 case "DATABASE" -> {
@@ -50,9 +63,8 @@ public class DropCommand extends DBCommand{
             }
             Files.delete(Paths.get(filePath));
         } catch(IOException ioe) {
-            DBServer.output = ("[ERROR]"+newLine+"Cannot delete folder");
+            DBServer.output = ("[ERROR]: Cannot delete folder");
         }
-
     }
 
     public void deleteDirContents(String filePath){
@@ -62,7 +74,7 @@ public class DropCommand extends DBCommand{
             try {
                 Files.delete(file.toPath());
             } catch(IOException ioe) {
-                DBServer.output = ("[ERROR]"+newLine+"Cannot delete file " +file.getName());
+                DBServer.output = ("[ERROR]: Cannot delete file " +file.getName());
             }
         }
     }

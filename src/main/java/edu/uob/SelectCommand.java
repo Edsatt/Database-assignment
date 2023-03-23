@@ -34,36 +34,61 @@ public class SelectCommand extends DBCommand{
     }
 
     public void interpretCommand() {
+        if(notInDatabase()) return;
+        this.filePath = server.getCurrentFolderPath().concat(File.separator +id.toLowerCase()+".tab");
+        if(!checkFileExists()) return;
+        getTable();
+        if(!isValidTable()) return;
+        if(!isValidList()) return;
+        if(!checkAttributes()) return;
+        getAllTableIDs();
+        outputTable();
+    }
+
+
+    public boolean notInDatabase() {
         try{
             server.checkInDatabase();
         } catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"Must be Using a database to select values from a table");
-            return;
+            DBServer.output = ("[ERROR]: Must be Using a database to select values from a table");
+            return true;
         }
-        this.filePath = server.getCurrentFolderPath().concat(File.separator +id.toLowerCase()+".tab");
+        return false;
+    }
+
+    public boolean checkFileExists() {
         try{
             server.fileExists(filePath,true);
         } catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"Table "+id+" not found in current database");
-            return;
+            DBServer.output = ("[ERROR]: Table "+id+" not found in current database");
+            return false;
         }
-        getTable();
+        return true;
+    }
+
+    public boolean isValidTable(){
         try{
             tableCheck();
         }catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"Table "+id+" has no attributes");
-            return;
+            DBServer.output = ("[ERROR]: Table "+id+" has no attributes");
+            return false;
         }
+        return true;
+    }
+
+    public boolean isValidList(){
         if(!allSelected()){
             try {
                 checkList();
             } catch (IOException e) {
-                DBServer.output = ("[ERROR]" + newLine + "Table referenced by attribute list does not match selected table");
-                return;
+                DBServer.output = ("[ERROR]: Table referenced by attribute list does not match selected table");
+                return false;
             }
         }
-        if(!checkAttributes()) return;
-        getAllTableIDs();
+        return true;
+    }
+
+    public void outputTable(){
         if(!hasCondition()){
             if(allSelected()) {
                 DBServer.output = DBServer.output.concat
@@ -177,7 +202,7 @@ public class SelectCommand extends DBCommand{
         try{
             checkAttributeName(attribute);
         }catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"Attribute "+attribute+" not found in current table");
+            DBServer.output = ("[ERROR]: Attribute "+attribute+" not found in current table");
         }
         return (table.modifyTable(table,attribute,value,comparator));
     }
@@ -242,7 +267,7 @@ public class SelectCommand extends DBCommand{
             try{
                 checkAttributeName(name);
             }catch(IOException e){
-                DBServer.output = ("[ERROR]"+newLine+"Attribute "+name+" not found in current table");
+                DBServer.output = ("[ERROR]: Attribute "+name+" not found in current table");
                 return false;
             }
         }

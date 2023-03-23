@@ -21,33 +21,13 @@ public class InsertCommand extends DBCommand{
     }
 
     public void interpretCommand() {
-        try{
-            server.checkInDatabase();
-        } catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"Must be Using a database to insert values into a table");
-            return;
-        }
+        if(notInDatabase()) return;
         this.filePath = server.getCurrentFolderPath().concat(File.separator +id.toLowerCase()+".tab");
         this.idFilePath = server.getCurrentFolderPath().concat(File.separator+id.toLowerCase()+"_id.txt");
-        try{
-            server.fileExists(filePath,true);
-        } catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"Table "+id+" not found in current database");
-            return;
-        }
+        if(!checkFileExists()) return;
         getTable();
-        try{
-            tableCheck();
-        }catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"Table "+id+" has no attributes");
-            return;
-        }
-        try{
-            rowCheck();
-        }catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"Expecting " +tableSize+" values");
-            return;
-        }
+        if(!checkTableIsValid()) return;
+        if(!checkNumberOfValues()) return;
         getIdFile();
         addRow();
         saveTable();
@@ -56,6 +36,46 @@ public class InsertCommand extends DBCommand{
 
     public void createValueList(String value) {
         this.values.add(value);
+    }
+
+    public boolean notInDatabase(){
+        try{
+            server.checkInDatabase();
+        } catch(IOException e){
+            DBServer.output = ("[ERROR]: Must be Using a database to insert values into a table");
+            return true;
+        }
+        return false;
+    }
+
+    public boolean checkFileExists() {
+        try{
+            server.fileExists(filePath,true);
+        } catch(IOException e){
+            DBServer.output = ("[ERROR]: Table "+id+" not found in current database");
+            return false;
+        }
+        return true;
+    }
+
+    public boolean checkTableIsValid(){
+        try{
+            tableCheck();
+        }catch(IOException e){
+            DBServer.output = ("[ERROR]: Table "+id+" has no attributes");
+            return false;
+        }
+        return true;
+    }
+
+    public boolean checkNumberOfValues(){
+        try{
+            rowCheck();
+        }catch(IOException e){
+            DBServer.output = ("[ERROR]: Expecting " +tableSize+" values");
+            return false;
+        }
+        return true;
     }
 
     public void getTable(){

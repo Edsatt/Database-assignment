@@ -36,6 +36,10 @@ public abstract class DBCommand {
 
     public void setId(String id){}
 
+    public boolean notInDatabase(){return true;}
+
+    public boolean checkFileExists(){return false;}
+
     public void createAttributeList(String attributeName){}
 
     public void createValueList(String value){}

@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 
-/** This class implements the DB server. */
 public class DBServer {
 
     private static final char END_OF_TRANSMISSION = 4;

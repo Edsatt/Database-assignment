@@ -24,48 +24,68 @@ public class CreateTableCommand extends DBCommand{
         this.id = dbName;
     }
 
+    public void createAttributeList(String attributeName){
+        hasList = true;
+        this.tempList.add(attributeName);
+    }
+
     public void interpretCommand() {
+        if(notInDatabase()) return;
+        this.filePath = server.getCurrentFolderPath().concat(File.separator +id.toLowerCase()+".tab");
+        this.idFilePath = server.getCurrentFolderPath().concat(File.separator+id.toLowerCase()+"_id.txt");
+        if(!checkFileExists()) return;
+        if(!canCreateFile()) return;
+        if(!createIDFIle()) return;
+        checkTable();
+    }
+
+    public boolean notInDatabase(){
         try{
             server.checkInDatabase();
         } catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"Must be Using a database to create a table");
-            return;
+            DBServer.output = ("[ERROR]: Must be Using a database to create a table");
+            return true;
         }
-        this.filePath = server.getCurrentFolderPath().concat(File.separator +id.toLowerCase()+".tab");
-        this.idFilePath = server.getCurrentFolderPath().concat(File.separator+id.toLowerCase()+"_id.txt");
+        return false;
+    }
+
+    public boolean checkFileExists(){
         try{
             server.fileExists(filePath,false);
         } catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"Table "+id+" already exists");
-            return;
+            DBServer.output = ("[ERROR]: Table "+id+" already exists");
+            return false;
         }
+        return true;
+    }
+
+    public boolean canCreateFile(){
         try{
             Files.createFile(Paths.get(filePath));
         }catch(IOException e){
-            DBServer.output = ("[ERROR]"+newLine+"Cannot create Table");
-            return;
+            DBServer.output = ("[ERROR]: Cannot create Table");
+            return false;
         }
-        createIDFIle();
+        return true;
+    }
+
+    public void checkTable(){
         if(hasList){
             try{
                 checkList();
             }catch(IOException e){
-                DBServer.output = ("[ERROR]"+newLine+"Table referenced by attribute list does not match selected table");
+                DBServer.output = ("[ERROR]: Table referenced by attribute list does not match selected table");
                 return;
             }
             try{
                 idCheck();
             }catch(IOException e){
-                DBServer.output = ("[ERROR]"+newLine+"id is not a valid column name");
+                DBServer.output = ("[ERROR]: id is not a valid column name");
+                return;
             }
             createTable();
             saveTable();
         }
-    }
-
-    public void createAttributeList(String attributeName){
-        hasList = true;
-        this.tempList.add(attributeName);
     }
 
     public void checkList() throws IOException{
@@ -98,12 +118,14 @@ public class CreateTableCommand extends DBCommand{
         return Objects.equals(tableName, id);
     }
 
-    public void createIDFIle(){
+    public boolean createIDFIle(){
         try {
             Files.createFile(Paths.get(idFilePath));
         } catch (IOException e) {
-            DBServer.output = ("[ERROR]"+newLine+"Cannot create id file");
+            DBServer.output = ("[ERROR]: Cannot create id file");
+            return false;
         }
+        return true;
     }
 
     public void createTable(){

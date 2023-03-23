@@ -8,19 +8,17 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UnitTests {
+public class TableStorageTests {
 
     private Database database;
-    private Table table;
 
-    // Create a new server _before_ every @Test
     @BeforeEach
     public void setup() {
         this.database = new Database("testDB");
     }
     @Test
     public void makeBasicTable() {
-        this.table = new Table(Stream.of("Column1", "Column2")
+        Table table = new Table(Stream.of("Column1", "Column2")
                 .collect(Collectors.toList()));
         Row row1 = new Row("row1", Stream.of("cell1", "cell3")
                 .collect(Collectors.toList()));
@@ -31,14 +29,14 @@ public class UnitTests {
         table.addRow("row2", row2);
         database.addTable("testTable", table);
 
-        assertEquals(this.table.getNumCols(), 3);
+        assertEquals(table.getNumCols(), 2);
         assertEquals(table.getNumRows(), 3);
-        assertEquals(table.getColumnName(0),"id");
-        assertEquals(table.getColumnName(1),"Column1");
-        assertEquals(table.getRow("row1").getValueByColumn(0), "1");
-        assertEquals(table.getRow("row1").getValueByColumn(1), "cell1");
-        assertEquals(table.getRow("row2").getValueByColumn(0), "2");
-        assertEquals(table.getRow("row2").getValueByColumn(1), "cell2");
+        assertEquals(table.getColumnName(0),"Column1");
+        assertEquals(table.getColumnName(1),"Column2");
+        assertEquals(table.getRow("row1").getValueByColumn(0), "cell1");
+        assertEquals(table.getRow("row1").getValueByColumn(1), "cell3");
+        assertEquals(table.getRow("row2").getValueByColumn(0), "cell2");
+        assertEquals(table.getRow("row2").getValueByColumn(1), "cell4");
     }
 }
 
