@@ -39,9 +39,7 @@ id	name	mark	pass
 1	Steve	65	TRUE
 2	Dave	55	TRUE
 
-// Note: this is a comment for use in this transcript only (your server doesn’t need to be able parse them)
 
-// Assuming there is a table called “coursework” in the database (and that table has been filled with data)
 SELECT * FROM coursework;
 [OK]
 id	task	submission
@@ -50,12 +48,6 @@ id	task	submission
 3	OXO	4
 4	STAG	2
 
-
-
-// For JOINs: discard the ids from the original tables;
-// discard the columns that the tables were matched on;
-// create a new unique id for each of row of the table produces 
-// attribute names should be prepended with the name of the table from which they originated
 
 JOIN coursework AND marks ON submission AND id;
 [OK]
